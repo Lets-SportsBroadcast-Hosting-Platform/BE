@@ -1,4 +1,4 @@
-app/.env
+# app/.env
 app/my_website.db
 __pycache__
 auth/__pycache__

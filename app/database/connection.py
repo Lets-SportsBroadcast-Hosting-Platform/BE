@@ -1,6 +1,8 @@
 from typing import Optional
 
+from models.user_table import User
 from pydantic import BaseSettings
+from sqlalchemy.orm import Session
 from sqlmodel import Session, SQLModel, create_engine
 
 # 데이터 베이스 파일 이름 지정
