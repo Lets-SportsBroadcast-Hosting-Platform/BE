@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 from fastapi.routing import APIRoute
-
-from models.user_table import TokenResponse
-from routes.login.route import kakao_auth_login
+from routes.login.route import login_as_token, sso
 
 login_routers = APIRouter(tags=["Login"])
 
-kakao_login_route = APIRoute(path="/kakao", endpoint=kakao_auth_login, methods=["POST"])
-login_routers.routes.append(kakao_login_route)
+login_route = APIRoute(path="/", endpoint=sso, methods=["POST"])
+login_token_route = APIRoute(path="/token", endpoint=login_as_token, methods=["POST"])
+login_routers.routes.append(login_route)
+login_routers.routes.append(login_token_route)
