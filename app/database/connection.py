@@ -1,33 +1,34 @@
 from typing import Optional
-
-from models.user_table import User
-from pydantic import BaseSettings
-from sqlalchemy.orm import Session
-from sqlmodel import Session, SQLModel, create_engine
-
-# 데이터 베이스 파일 이름 지정
-database_file = "my_website.db"
-# DB 연결 MySQL의 경우 mysql://user:password@localhost/mydatabase 형식을 맞춰주면 된다.
-database_connetion_string = f"sqlite:///{database_file}"
-connect_args = {"check_same_thread": False}
-engine_url = create_engine(database_connetion_string, echo=True, connect_args=connect_args)
-
+from pydantic_settings import BaseSettings
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import  async_sessionmaker, async_session
 
 # Setting config load
 class Settings(BaseSettings):
     SECRET_KEY: Optional[str] = None
-    DATABASE_URL: Optional[str] = None
+    NAVER_CLIENT_ID: Optional[str] = None
+    NAVER_SECRET_KEY: Optional[str] = None
+    DATABASE_HOST: Optional[str] = None
+    DATABASE_USER: Optional[str] = None
+    DATABASE_PWD: Optional[str] = None
+    DATABASE_NAME: Optional[str] = None
 
     class Config:
         env_file = ".env"
 
 
-# 데이터베이스 테이블 생성하는 함수
-def conn():
-    SQLModel.metadata.create_all(engine_url)
+# 데이터베이스 테이블 연결하는 클래스
+class conn:
+    def __init__(self, engine_url):
+        self.engine = create_async_engine(engine_url, echo=True)
+        try:
+            self.engine.connect()
+            print("db 연결됨")
+        except:
+            print("연결 안됨...")
 
-
-# Session 사용 후 자동으로 종료
-def get_session():
-    with Session(engine_url) as session:
-        yield session
+    def sessionmaker(self):
+        Session = async_sessionmaker(autocommit=False, autoflush=False, bind=self.engine,expire_on_commit=False)
+        session = Session()
+        return session
