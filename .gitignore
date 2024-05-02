@@ -1,1 +1,11 @@
+# app/.env
+app/my_website.db
+__pycache__
 app/__pycache__
+auth/__pycache__
+database/__pycache__
+models/__pycache__
+routes/login/__pycache__
+tt.ipynb
+dbtest.ipynb
+user_sql.sql

@@ -1,0 +1,27 @@
+from database.connection import Settings, conn
+
+# Settings 클래스를 인스턴스화 해서 .env 값을 가져온다.
+settings = Settings()
+
+# SQLAlchemy를 사용하는 경우
+DB_URL = f"mysql+aiomysql://{settings.DATABASE_USER}:{settings.DATABASE_PWD}@{settings.DATABASE_HOST}:{3306}/{settings.DATABASE_NAME}"
+_engine = conn(DB_URL)
+
+
+async def get_db():
+    db = _engine.sessionmaker()
+    try:
+        yield db
+    finally:
+        await db.close()
+
+
+# pymysql 을 사용하는 경우
+# conn = pymysql.connect(
+#     host=settings.DATABASE_HOST,
+#     user=settings.DATABASE_USER,
+#     password=settings.DATABASE_PWD,
+#     db=settings.DATABASE_NAME,
+#     host=3306,
+#     charset="utf8",
+# )
