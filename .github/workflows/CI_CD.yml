@@ -1,19 +1,16 @@
 name: Deploy with Docker
-# 내가 만드는 이름이다 뭐든 상관없다
 
 on:
   push:
+    # 브랜치로 개발하며 완료되면 main 에 머지해 Actions 를 작동
     branches: [ main ]
-    # 무슨 브랜치가 업데이트 될 때 Actions 를 작동시킬지 적는다.
-    # develop 브랜치로 개발하며 완료되면 main 에 머지해 Actions 를 작동시키면 조금 더 안전하겠지.
-    # 여러개 적어도 된다.
-
+  pull_request:
+    branches: [ main ]
 env:
+  # Docker image 를 ghcr.io 에 올릴 때 우리의github이름/이미지이름 으로 저장한다. 이미지이름을 정해주면 된다.
   DOCKER_IMAGE: ghcr.io/${{ github.actor }}/lets_server_image
   VERSION: ${{ github.sha }}
   NAME: lets_server # 컨테이너 이름
-  # Docker image 를 ghcr.io 에 올릴 때 우리의github이름/이미지이름 으로 저장한다. 이미지이름을 정해주면 된다.
-  # Docker image 의 이름을 newproject 이라고 해놓은 것. 이름 뭐할지 정하면 된다.
 
 jobs:
   build:
@@ -40,8 +37,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-          # 우리가 방금 복사해서 setting secrets 에 붙여줬던 token 이다. 이름을 기억해 넣어주자.
-          # 우리의 ghcr.io 에 접근하기 위함이다.
+          # ghcr.io 에 접근
         
       - name: Build and push
         id: docker_build

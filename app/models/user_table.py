@@ -30,7 +30,7 @@ class AuthModel(Base):
 
 class TokenResponse(BaseModel):
     access_token: str = None
-    login_token: str = None
+    # login_token: str = None
     jwt_token: str = None
     state: str = None
     provider: str = None
