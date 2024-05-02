@@ -39,7 +39,7 @@ async def login_as_token(token: Optional[TokenResponse] = None, db: AsyncSession
         if (await query_response(query, db)).one_or_none():
             user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("login_token")))
             print("디코딩된 AuthModel.token을 uuid로 변환", user_id)
-            query = select(UserModel).where(UserModel.user_id == user_id)
+            query = select(UserModel).where(UserModel.user_id == str(user_id))
             if (await query_response(query, db)).one_or_none():
                 return HTTPException(status_code=status.HTTP_200_OK, detail="Success")
             else:
