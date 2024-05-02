@@ -7,5 +7,4 @@ database/__pycache__
 models/__pycache__
 routes/login/__pycache__
 tt.ipynb
-dbtest.ipynb
 user_sql.sql
