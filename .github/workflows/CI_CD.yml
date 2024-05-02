@@ -4,8 +4,6 @@ on:
   push:
     # 브랜치로 개발하며 완료되면 main 에 머지해 Actions 를 작동
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 env:
   # Docker image 를 ghcr.io 에 올릴 때 우리의github이름/이미지이름 으로 저장한다. 이미지이름을 정해주면 된다.
   DOCKER_IMAGE: ghcr.io/${{ github.actor }}/lets_server_image
