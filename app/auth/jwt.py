@@ -1,5 +1,4 @@
 from database import settings
-from fastapi import HTTPException, status
 from jose import JWTError, jwt
 
 
@@ -15,6 +14,7 @@ def create_jwt_access_token(token: str, provider: str) -> str:
 
 # jwt 토큰을 검증하는 함수 -> 디코드된 토큰을 반환한다
 def verify_access_token(jwt_token: str) -> str:
+    print("verfiy_access_token", jwt_token)
     try:
         # 토큰을 decode한 값을 data에 저장한다.
         # 이 단계에서 decode되지 않으면 당연히 검증된 토큰이 아니다.
@@ -22,4 +22,3 @@ def verify_access_token(jwt_token: str) -> str:
         return token
     except JWTError:
         raise ValueError("디코딩 이 불가합니다.")
-    

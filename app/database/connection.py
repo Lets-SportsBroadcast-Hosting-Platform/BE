@@ -1,8 +1,8 @@
 from typing import Optional
+
 from pydantic_settings import BaseSettings
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.ext.asyncio import  async_sessionmaker, async_session
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
 
 # Setting config load
 class Settings(BaseSettings):
@@ -29,6 +29,8 @@ class conn:
             print("연결 안됨...")
 
     def sessionmaker(self):
-        Session = async_sessionmaker(autocommit=False, autoflush=False, bind=self.engine,expire_on_commit=False)
+        Session = async_sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine, expire_on_commit=False
+        )
         session = Session()
         return session

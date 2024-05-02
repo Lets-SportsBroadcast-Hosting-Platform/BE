@@ -5,17 +5,17 @@ from datetime import datetime
 from typing import Optional
 
 import httpx
-from database.search_query import query_response
 from auth.jwt import create_jwt_access_token, verify_access_token
 from database import get_db, settings
+from database.search_query import query_response
 from fastapi import Depends, HTTPException, status
 from models.user_table import AuthModel, TokenResponse, UserModel
-from sqlalchemy.ext.asyncio import AsyncSession,async_sessionmaker
 from sqlalchemy import ScalarResult, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 # 소셜 로그인 함수
-async def sso(token: Optional[TokenResponse], db: AsyncSession = Depends(get_db)):        
+async def sso(token: Optional[TokenResponse], db: AsyncSession = Depends(get_db)):
     try:
         if token.provider == "kakao":
             return await login_by_kakao(token, db)
@@ -28,16 +28,19 @@ async def sso(token: Optional[TokenResponse], db: AsyncSession = Depends(get_db)
 
 
 # 클라이언트에서 토큰으로 로그인
-async def login_as_token(token: Optional[TokenResponse] = None, db: AsyncSession = Depends(get_db)) -> dict:
+async def login_as_token(token: Optional[TokenResponse] = None, db: AsyncSession = Depends(get_db)):
+    print(token)
     decode_jwt_token = verify_access_token(token.jwt_token)
     try:
-        query = select(AuthModel).where( AuthModel.token == decode_jwt_token.get("login_token")
-                and AuthModel.provider == decode_jwt_token.get("provider"))
-        if (await query_response(query,db)).one_or_none():
+        query = select(AuthModel).where(
+            AuthModel.token == decode_jwt_token.get("login_token")
+            and AuthModel.provider == decode_jwt_token.get("provider")
+        )
+        if (await query_response(query, db)).one_or_none():
             user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("login_token")))
-            print("디코딩된 AuthModel.token을 uuid로 변환",user_id)
-            query = select(UserModel).where( UserModel.user_id == user_id)
-            if (await query_response(query,db)).one_or_none():
+            print("디코딩된 AuthModel.token을 uuid로 변환", user_id)
+            query = select(UserModel).where(UserModel.user_id == user_id)
+            if (await query_response(query, db)).one_or_none():
                 return HTTPException(status_code=status.HTTP_200_OK, detail="Success")
             else:
                 raise ValueError("Fail")
@@ -48,7 +51,7 @@ async def login_as_token(token: Optional[TokenResponse] = None, db: AsyncSession
 
 
 # 카카오 로그인 함수 구현
-async def login_by_kakao(token: Optional[TokenResponse], db : AsyncSession) -> dict:
+async def login_by_kakao(token: Optional[TokenResponse], db: AsyncSession) -> dict:
     print("카카오 로그인 시도")
     url = "https://kapi.kakao.com/v2/user/me"
     headers = {
@@ -78,7 +81,7 @@ async def login_by_naver(token: Optional[TokenResponse], db: AsyncSession) -> di
         else:
             raise ValueError("Bad Parameter")
         if response:
-            user_data,auth_data = make_user_data(response, token.provider)
+            user_data, auth_data = make_user_data(response, token.provider)
             return await user_auth_db(user_data, auth_data, db)
         else:
             raise ValueError("Bad Parameter")
@@ -102,7 +105,7 @@ async def naver_get_data(access_token: str) -> dict:
         return json.loads((await client.get(url, headers=headers)).text)
 
 
-def make_user_data(response: dict, provider: str) -> (UserModel,AuthModel): # type: ignore
+def make_user_data(response: dict, provider: str) -> (UserModel, AuthModel):  # type: ignore
     if provider == "kakao":
         response = response.get("kakao_account")
     elif provider == "naver":
@@ -119,14 +122,15 @@ def make_user_data(response: dict, provider: str) -> (UserModel,AuthModel): # ty
     auth_data = AuthModel(token=str(base64.b64encode(user_uuid.bytes))[2:-1], provider=provider)
     return user_data, auth_data
 
+
 # db에 유저 데이터가있는지 확인하고 없으면 데이터 추가
-async def user_auth_db(user_table: UserModel, auth_table: AuthModel, db:AsyncSession) -> dict:
+async def user_auth_db(user_table: UserModel, auth_table: AuthModel, db: AsyncSession) -> dict:
     # 로그인 유저가 DB에 있는지 검사한뒤
     if not await user_db_check(user_table, db):
         print("유저 없음")
-        user_table.region,user_table.alarm ="서울", False
+        user_table.region, user_table.alarm = "서울", False
         auth_table.create_time = user_table.join_date = datetime.today()
-        db.add_all([user_table,auth_table])
+        db.add_all([user_table, auth_table])
         await db.commit()
         await db.refresh(user_table)
         await db.refresh(auth_table)
@@ -139,7 +143,7 @@ async def user_auth_db(user_table: UserModel, auth_table: AuthModel, db:AsyncSes
 # user table에 가입되어 있는지 확인
 async def user_db_check(data: UserModel, db: AsyncSession) -> bool:
     _query = select(UserModel).where(UserModel.name == data.name)
-    existing_id = (await query_response(_query,db)).one_or_none()
+    existing_id = (await query_response(_query, db)).one_or_none()
     return True if existing_id else False
 
 
@@ -161,9 +165,8 @@ async def token_verify_db(user_id: str, provider: str, db: AsyncSession) -> dict
 
 
 # login table에 값이 있는지 확인
-async def login_token_db_check_by_token(user_id : str, db : AsyncSession) -> ScalarResult:
+async def login_token_db_check_by_token(user_id: str, db: AsyncSession) -> ScalarResult:
     user_id_to_token = base64.b64encode(uuid.UUID(user_id).bytes)
     query = select(AuthModel).where(AuthModel.token == str(user_id_to_token)[2:-1])
-    result = (await query_response(query,db)).one_or_none()
+    result = (await query_response(query, db)).one_or_none()
     return result if result else False
-
