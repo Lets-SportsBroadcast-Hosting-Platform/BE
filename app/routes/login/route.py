@@ -16,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # 소셜 로그인 함수
 async def sso(token: Optional[TokenResponse], db: AsyncSession = Depends(get_db)):
-    print(token)
     try:
         if token.provider == "kakao":
             return await login_by_kakao(token, db)
@@ -64,7 +63,6 @@ async def login_by_kakao(token: Optional[TokenResponse], db: AsyncSession) -> di
         response = json.loads((await client.post(url, headers=headers)).text)
         try:
             if response:
-                print("응답은 ", response)
                 user_data, auth_data = make_user_data(response, token.provider)
                 return await user_auth_db(user_data, auth_data, db)
             else:
@@ -127,6 +125,7 @@ def make_user_data(response: dict, provider: str) -> (UserModel, AuthModel):  # 
 
 # db에 유저 데이터가있는지 확인하고 없으면 데이터 추가
 async def user_auth_db(user_table: UserModel, auth_table: AuthModel, db: AsyncSession) -> dict:
+    # 로그인 유저가 DB에 있는지 검사한뒤
     userInfo = {
         "name": user_table.name,
         "mail": user_table.mail,
@@ -134,7 +133,6 @@ async def user_auth_db(user_table: UserModel, auth_table: AuthModel, db: AsyncSe
         "birthday": user_table.birthday,
         "gender": user_table.gender,
     }
-    # 로그인 유저가 DB에 있는지 검사한뒤
     if not await user_db_check(user_table, db):
         print("유저 없음", flush=True)
         user_table.region, user_table.alarm = "서울", False
@@ -143,9 +141,10 @@ async def user_auth_db(user_table: UserModel, auth_table: AuthModel, db: AsyncSe
         await db.commit()
         await db.refresh(user_table)
         await db.refresh(auth_table)
-        print(user_table)
-        jwt_token = create_jwt_access_token(auth_table.token, auth_table.provider)
-        return {"jwt_token": jwt_token, "userInfo": userInfo}
+        return {
+            "jwt_token": create_jwt_access_token(auth_table.token, auth_table.provider),
+            "userInfo": userInfo,
+        }
     else:
         print("유저 있음", flush=True)
         jwt_token = await token_verify_db(user_table.user_id, auth_table.provider, db)
@@ -161,7 +160,7 @@ async def user_db_check(data: UserModel, db: AsyncSession) -> bool:
 
 # login table에 데이터가 있는지 확인하고
 # 소셜 로그인 provider와 일치하는지 확인하는 함수
-async def token_verify_db(user_id: str, provider: str, db: AsyncSession):
+async def token_verify_db(user_id: str, provider: str, db: AsyncSession) -> dict:
     existing_token = await login_token_db_check_by_token(user_id, db)
     try:
         if existing_token and existing_token.provider == provider:
