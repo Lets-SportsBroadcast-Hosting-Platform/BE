@@ -7,6 +7,7 @@ def create_jwt_access_token(token: str, provider: str) -> str:
     payload = {"auth_token": token, "provider": provider}
     try:
         jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+        print("create_jwt_access_token", jwt_token)
         return jwt_token
     except JWTError:
         raise ValueError("인코딩이 되지 않았습니다.")

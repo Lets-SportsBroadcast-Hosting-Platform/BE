@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes.login import login_routers
+from routes import login_routers, sports_routers
 
 # FastAPI
 app = FastAPI()
@@ -17,6 +17,7 @@ app.add_middleware(
 
 # 라우터 등록
 app.include_router(login_routers, prefix="/login")
+app.include_router(sports_routers, prefix="/sports")
 
 
 @app.get("/")
