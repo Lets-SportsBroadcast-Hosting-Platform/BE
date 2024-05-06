@@ -1,6 +1,12 @@
 from fastapi import FastAPI
+from fastapi.exception_handlers import (
+    http_exception_handler,
+    request_validation_exception_handler,
+)
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from routes.login import login_routers
+from routes import host_routers, login_routers
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # FastAPI
 app = FastAPI()
@@ -15,8 +21,21 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request, exc):
+    print(f"OMG! An HTTP error!: {repr(exc)}")
+    return await http_exception_handler(request, exc)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    print(f"OMG! The client sent invalid data!: {exc}")
+    return await request_validation_exception_handler(request, exc)
+
+
 # 라우터 등록
 app.include_router(login_routers, prefix="/login")
+app.include_router(host_routers, prefix="/host")
 
 
 @app.get("/")

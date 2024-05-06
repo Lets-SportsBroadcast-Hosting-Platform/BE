@@ -6,13 +6,16 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 # Setting config load
 class Settings(BaseSettings):
-    SECRET_KEY: Optional[str] = None
+    SERVER_SECRET_KEY: Optional[str] = None
+    KAKAO_CLIENT_ID: Optional[str] = None
+    KAKAO_RESTAPI_KEY: Optional[str] = None
     NAVER_CLIENT_ID: Optional[str] = None
     NAVER_SECRET_KEY: Optional[str] = None
     DATABASE_HOST: Optional[str] = None
     DATABASE_USER: Optional[str] = None
     DATABASE_PWD: Optional[str] = None
     DATABASE_NAME: Optional[str] = None
+    BUSSINESS_SERVICE_KEY: Optional[str] = None
 
     class Config:
         env_file = ".env"

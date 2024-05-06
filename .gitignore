@@ -1,10 +1,8 @@
-# app/.env
-app/my_website.db
-__pycache__
+app/.env
 app/__pycache__
-auth/__pycache__
-database/__pycache__
-models/__pycache__
-routes/login/__pycache__
-tt.ipynb
-user_sql.sql
+app/auth/__pycache__
+app/database/__pycache__
+app/models/__pycache__
+app/routes/__pycache__
+app/routes/login/__pycache__
+app/routes/host/__pycache__
