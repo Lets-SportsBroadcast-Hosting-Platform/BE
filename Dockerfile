@@ -9,7 +9,7 @@ COPY .env /code/app/.env
 WORKDIR /code
 
 # .env 파일 로드
-# ENV $(cat /app/.env | xargs)
+# ENV $(cat /code/app/.env | xargs)
 
 COPY ./requirements.txt /code/requirements.txt
 
