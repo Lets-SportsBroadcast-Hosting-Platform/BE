@@ -14,20 +14,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    steps:
-      - name: Create .env file
-        run:
-          echo "SERVER_SECRET_KEY=${{secrets.SERVER_SECRET_KEY}}" > .env
-          echo "KAKAO_CLIENT_ID=${{secrets.KAKAO_CLIENT_ID}}" >> .env
-          echo "KAKAO_RESTAPI_KEY=${{secrets.KAKAO_RESTAPI_KEY}}" >> .env
-          echo "NAVER_CLIENT_ID=${{secrets.NAVER_CLIENT_ID}}" >> .env
-          echo "NAVER_SECRET_KEY=${{secrets.NAVER_SECRET_KEY}}" >> .env
-          echo "DATABASE_HOST=${{secrets.DATABASE_HOST}}" >> .env
-          echo "DATABASE_USER=${{secrets.DATABASE_USER}}" >> .env
-          echo "DATABASE_PWD=${{secrets.DATABASE_PWD}}" >> .env
-          echo "DATABASE_NAME=${{secrets.DATABASE_NAME}}" >> .env
-          echo "BUSSINESS_SERVICE_KEY=${{secrets.BUSSINESS_SERVICE_KEY}}" >> .env
 
+    steps:
       - name: Checkout
         uses: actions/checkout@v2
       
@@ -57,6 +45,17 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: ${{ env.DOCKER_IMAGE }}:latest
+          build-args: |
+            SERVER_SECRET_KEY=${{secrets.SERVER_SECRET_KEY}}
+            KAKAO_CLIENT_ID=${{secrets.KAKAO_CLIENT_ID}}
+            KAKAO_RESTAPI_KEY=${{secrets.KAKAO_RESTAPI_KEY}}
+            NAVER_CLIENT_ID=${{secrets.NAVER_CLIENT_ID}}
+            NAVER_SECRET_KEY=${{secrets.NAVER_SECRET_KEY}}
+            DATABASE_HOST=${{secrets.DATABASE_HOST}}
+            DATABASE_USER=${{secrets.DATABASE_USER}}
+            DATABASE_PWD=${{secrets.DATABASE_PWD}}
+            DATABASE_NAME=${{secrets.DATABASE_NAME}}
+            BUSSINESS_SERVICE_KEY=${{secrets.BUSSINESS_SERVICE_KEY}}
   
   deploy:
     needs: build
