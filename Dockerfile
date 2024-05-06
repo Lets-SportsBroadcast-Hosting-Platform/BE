@@ -18,22 +18,21 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 COPY ./app /code/app
-COPY .env /code/app
+
+RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" > /code/app/.env && \
+    echo "KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}" >> /code/app/.env && \
+    echo "KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}" >> /code/app/.env && \
+    echo "NAVER_CLIENT_ID=${NAVER_CLIENT_ID}" >> /code/app/.env && \
+    echo "NAVER_SECRET_KEY=${NAVER_SECRET_KEY}" >> /code/app/.env && \
+    echo "DATABASE_HOST=${DATABASE_HOST}" >> /code/app/.env && \
+    echo "DATABASE_USER=${DATABASE_USER}" >> /code/app/.env && \
+    echo "DATABASE_PWD=${DATABASE_PWD}" >> /code/app/.env && \
+    echo "DATABASE_NAME=${DATABASE_NAME}" >> /code/app/.env && \
+    echo "BUSSINESS_SERVICE_KEY=${BUSSINESS_SERVICE_KEY}" >> /code/app/.env
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 WORKDIR /code/app
-
-ENV SERVER_SECRET_KEY=${SERVER_SECRET_KEY} \
-    KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID} \
-    KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}\
-    NAVER_CLIENT_ID=${NAVER_CLIENT_ID}\
-    NAVER_SECRET_KEY=${NAVER_SECRET_KEY}\
-    DATABASE_HOST=${DATABASE_HOST}\
-    DATABASE_USER=${DATABASE_USER}\
-    DATABASE_PWD=${DATABASE_PWD}\
-    DATABASE_NAME=${DATABASE_NAME}\
-    BUSSINESS_SERVICE_KEY=${BUSSINESS_SERVICE_KEY}
 
 EXPOSE 80
 
