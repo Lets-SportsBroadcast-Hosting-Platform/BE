@@ -4,12 +4,12 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # 환경 변수 파일 복사
-COPY .env /code/app/.env
+COPY app/.env /code/app/.env
+
+WORKDIR /code
 
 # .env 파일 로드
 ENV $(cat /app/.env | xargs)
-
-WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
