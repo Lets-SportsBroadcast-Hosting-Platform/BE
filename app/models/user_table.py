@@ -1,11 +1,13 @@
 from datetime import datetime
+from typing import Optional
 
 from models import Base
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column
 
 
+# User 테이블
 class UserModel(Base):
     __tablename__ = "User"
 
@@ -16,10 +18,11 @@ class UserModel(Base):
     birthyear: Mapped[str] = mapped_column(nullable=False)
     birthday: Mapped[str] = mapped_column(nullable=False)
     region: Mapped[str] = mapped_column(nullable=False)
-    alarm: Mapped[str] = mapped_column(nullable=False)
+    alarm: Mapped[bool] = mapped_column(nullable=False)
     join_date: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
 
 
+# 인증 테이블
 class AuthModel(Base):
     __tablename__ = "Auth"
 
@@ -28,9 +31,38 @@ class AuthModel(Base):
     create_time: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
 
 
-class TokenResponse(BaseModel):
-    access_token: str = None
-    # login_token: str = None
-    jwt_token: str = None
-    state: str = None
-    provider: str = None
+class userInfo_server2client(BaseModel):
+    name: Optional[str] = None
+    mail: Optional[EmailStr] = None
+    gender: Optional[str] = None
+    birthyear: Optional[str] = None
+    birthday: Optional[str] = None
+    region: Optional[str] = None
+
+    def __init__(self, user_instance: UserModel, **kwargs):
+        super().__init__(**kwargs)
+        self.name = user_instance.name
+        self.mail = user_instance.mail
+        self.gender = "female" if user_instance.gender else "male"
+        self.birthyear = user_instance.birthyear
+        self.birthday = user_instance.birthday
+        self.region = user_instance.region
+
+
+class ssologin_client2server(BaseModel):
+    access_token: str
+    state: str | None = None
+    provider: str
+
+
+class authlogin_client2server(BaseModel):
+    jwt_token: Optional[str]
+
+
+# 로그인 인증한 후 클라이언트로 보낼때 모델
+class login_result_server2client(authlogin_client2server):
+    userInfo: Optional[dict] = None
+
+    def __init__(self, instance: UserModel, **kwargs):
+        super().__init__(**kwargs)
+        self.userInfo = userInfo_server2client(user_instance=instance).model_dump()
