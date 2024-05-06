@@ -17,10 +17,10 @@ ARG SERVER_SECRET_KEY \
 WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
+COPY ./app /code/app
+COPY .env /code/app
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-
-COPY ./app /code/app
 
 WORKDIR /code/app
 
