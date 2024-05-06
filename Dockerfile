@@ -3,13 +3,18 @@ FROM python:3.11.9-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# 환경 변수 파일 복사
-COPY .env /code/app/.env
+ARG SERVER_SECRET_KEY \
+    KAKAO_CLIENT_ID \
+    KAKAO_RESTAPI_KEY \
+    NAVER_CLIENT_ID \
+    NAVER_SECRET_KEY \
+    DATABASE_HOST \
+    DATABASE_USER \
+    DATABASE_PWD \
+    DATABASE_NAME \
+    BUSSINESS_SERVICE_KEY
 
 WORKDIR /code
-
-# .env 파일 로드
-# ENV $(cat /code/app/.env | xargs)
 
 COPY ./requirements.txt /code/requirements.txt
 
@@ -18,6 +23,17 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./app /code/app
 
 WORKDIR /code/app
+
+ENV SERVER_SECRET_KEY=${SERVER_SECRET_KEY} \
+    KAKAO_CLIENT_ID=${secrets.KAKAO_CLIENT_ID} \
+    KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}\
+    NAVER_CLIENT_ID=${NAVER_CLIENT_ID}\
+    NAVER_SECRET_KEY=${NAVER_SECRET_KEY}\
+    DATABASE_HOST=${DATABASE_HOST}\
+    DATABASE_USER=${DATABASE_USER}\
+    DATABASE_PWD=${DATABASE_PWD}\
+    DATABASE_NAME=${DATABASE_NAME}\
+    BUSSINESS_SERVICE_KEY=${BUSSINESS_SERVICE_KEY}
 
 EXPOSE 80
 
