@@ -24,9 +24,11 @@ async def auth_bussiness_num(req: Auth_Business_Registration_Number) -> dict:
             if res_data.get("b_stt") == "계속사업자":
                 return {"type": res_data.get("b_stt"), "result": "인증 되었습니다."}
             else:
-                raise HTTPException(status_code=400, detail=res_data.get("b_stt"))
+                raise HTTPException(status_code=200, detail=400)
+                # raise HTTPException(status_code=200, detail=res_data.get("b_stt"))
         else:
-            raise HTTPException(status_code=400, detail=res_data.get("tax_type"))
+            raise HTTPException(status_code=200, detail=400)
+            # raise HTTPException(status_code=200, detail=res_data.get("tax_type"))
 
 
 # 새로운 가게 추가
@@ -43,7 +45,8 @@ async def searchlist(keyword: str, provider: str):
     elif provider == "naver":
         return await naver_searchlist(keyword, provider)
     else:
-        raise HTTPException(status_code=400, detail="bad provider")
+        raise HTTPException(status_code=200, detail=400)
+        # raise HTTPException(status_code=400, detail="bad provider")
 
 
 # 카카오 검색 api 함수
@@ -58,7 +61,8 @@ async def kakao_searchlist(keyword: str, provider: str) -> storeData:
         if response.status_code == 200:
             return storeData(json.loads(response.text).get("documents"), provider)
         else:
-            raise HTTPException(status_code=500, detail="잘못된 요청입니다.")
+            raise HTTPException(status_code=200, detail=400)
+            # raise HTTPException(status_code=500, detail="잘못된 요청입니다.")
 
 
 # 네이버 검색 api 함수
@@ -75,4 +79,5 @@ async def naver_searchlist(keyword: str, provider: str) -> storeData:
         if response.status_code == 200:
             return storeData(json.loads(response.text).get("items"), provider)
         else:
-            raise HTTPException(status_code=500, detail="잘못된 요청입니다.")
+            raise HTTPException(status_code=200, detail=400)
+            # raise HTTPException(status_code=500, detail="잘못된 요청입니다.")
