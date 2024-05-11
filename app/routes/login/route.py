@@ -27,7 +27,8 @@ async def sso(req: ssologin_client2server, db: AsyncSession = Depends(get_db)):
     elif req.provider.lower() == "naver":
         return await login_by_naver(req, db)
     else:
-        raise HTTPException(status_code=403, detail="잘못된 소셜 로그인을 하셨습니다.")
+        raise HTTPException(status_code=200, detail=400)
+        # raise HTTPException(status_code=403, detail="잘못된 소셜 로그인을 하셨습니다.")
 
 
 # 클라이언트에서 토큰으로 로그인
@@ -40,14 +41,16 @@ async def login_as_token(
         AuthModel.provider == decode_jwt_token.get("provider"),
     )
     if not (await query_response(query, db)).one_or_none():
-        raise HTTPException(status_code=400, detail="인증에 실패했습니다.")
+        raise HTTPException(status_code=200, detail=400)
+        # raise HTTPException(status_code=400, detail="인증에 실패했습니다.")
     user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
     query = select(UserModel).where(UserModel.user_id == str(user_id))
     result = (await query_response(query, db)).one_or_none()
     if result:
         return userInfo_server2client(user_instance=result)
     else:
-        raise HTTPException(status_code=400, detail="DB에 유저가 없습니다.")
+        raise HTTPException(status_code=200, detail=400)
+        # raise HTTPException(status_code=400, detail="DB에 유저가 없습니다.")
 
 
 # 카카오 로그인 함수 구현
@@ -64,10 +67,12 @@ async def login_by_kakao(
     async with httpx.AsyncClient(http2=True) as client:
         response = json.loads((await client.post(url, headers=headers)).text)
         if not response:
-            raise HTTPException(status_code=400, detail="응답이 오지 않음")
+            raise HTTPException(status_code=200, detail=400)
+            # raise HTTPException(status_code=400, detail="응답이 오지 않음")
         res = await user_auth_db(*make_user_data(response, req.provider), db)
         if type(res) == ValueError:
-            raise HTTPException(status_code=422, detail=str(res))
+            raise HTTPException(status_code=200, detail=400)
+            # raise HTTPException(status_code=422, detail=str(res))
         return login_result_server2client(jwt_token=res[0], instance=res[-1])
 
 
@@ -78,13 +83,16 @@ async def login_by_naver(
     print("네이버 로그인 시도", flush=True)
     access_token = await naver_auth_token(req)
     if not access_token:
-        raise HTTPException(status_code=403, detail="엑세스 토큰이 발급되지 않음")
+        raise HTTPException(status_code=200, detail=400)
+        # raise HTTPException(status_code=403, detail="엑세스 토큰이 발급되지 않음")
     response = await naver_get_data(access_token)
     if not response:
-        raise HTTPException(status_code=404, detail="응답이 오지 않음")
+        raise HTTPException(status_code=200, detail=400)
+        # raise HTTPException(status_code=404, detail="응답이 오지 않음")
     res = await user_auth_db(*make_user_data(response, req.provider), db)
     if type(res) == ValueError:
-        raise HTTPException(status_code=400, detail=str(res))
+        raise HTTPException(status_code=200, detail=400)
+        # raise HTTPException(status_code=400, detail=str(res))
     return login_result_server2client(jwt_token=res[0], instance=res[-1])
 
 
