@@ -43,7 +43,7 @@ class userInfo_server2client(BaseModel):
         super().__init__(**kwargs)
         self.name = user_instance.name
         self.mail = user_instance.mail
-        self.gender = "female" if user_instance.gender else "male"
+        self.gender = user_instance.gender
         self.birthyear = user_instance.birthyear
         self.birthday = user_instance.birthday
         self.region = user_instance.region
