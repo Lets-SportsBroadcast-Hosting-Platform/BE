@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
+
 from models import Base
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import func

@@ -6,6 +6,7 @@ app/models/__pycache__
 app/routes/__pycache__
 app/routes/login/__pycache__
 app/routes/host/__pycache__
+test.ipynb
 
 # gitignore가 작동하지 않을때 대처법
 # git rm -r --cached .
