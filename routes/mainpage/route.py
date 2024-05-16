@@ -25,7 +25,7 @@ async def tt(url):
 
 async def make_url(upperCategoryId, categoryId):
     year = datetime.now().year
-    month = datetime.now().month
+    month = datetime.now().month + 1
     
     days_in_month = calendar.monthrange(year, month)[1]
     url =f"https://api-gw.sports.naver.com/schedule/games?fields=basic%2CsuperCategoryId%2CcategoryName%2Cstadium%2CstatusNum%2CgameOnAir%2ChasVideo%2Ctitle%2CspecialMatchInfo%2CroundCode%2CseriesOutcome%2CseriesGameNo%2ChomeStarterName%2CawayStarterName%2CwinPitcherName%2ClosePitcherName%2ChomeCurrentPitcherName%2CawayCurrentPitcherName%2CbroadChannel&upperCategoryId={upperCategoryId}&categoryId={categoryId}&fromDate=2024-{month:02}-01&toDate=2024-{month:02}-{days_in_month}&roundCodes&size=500"
