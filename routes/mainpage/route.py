@@ -1,20 +1,27 @@
 import httpx
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import calendar
 from fastapi import HTTPException
 datedict = {0:'월', 1:'화', 2:'수', 3:'목', 4:'금', 5:'토', 6:'일'}
 
-KBO_game_schdule = {
-    'games':[
-    ]
-}
 
 #date에 해당하는 요일을 반환하는 함수
 def weekDay(date):
     datetime_date = datetime.strptime(date, '%Y-%m-%d')
     result = datedict[datetime_date.weekday()]
     return result
+
+# esports startdate값이 milliseconds값으로 오기때문에 변환하는 함수 271115456500->2015-05-03 18:30
+def change_date(timestamp_ms):
+    # milliseconds -> seconds
+    timestamp_s = timestamp_ms / 1000
+    # timestamp 생성
+    date_time = datetime.utcfromtimestamp(timestamp_s)
+    # 2024-05-03 12:30으로 변환
+    kst_date_time = date_time + timedelta(hours=9)
+    formatted_date_time = kst_date_time.strftime('%Y-%m-%d %H:%M')
+    return formatted_date_time
 
 #크롤링정보 URL로 부터 get 요청
 async def tt(url):
@@ -31,7 +38,22 @@ async def make_url(upperCategoryId, categoryId):
     url =f"https://api-gw.sports.naver.com/schedule/games?fields=basic%2CsuperCategoryId%2CcategoryName%2Cstadium%2CstatusNum%2CgameOnAir%2ChasVideo%2Ctitle%2CspecialMatchInfo%2CroundCode%2CseriesOutcome%2CseriesGameNo%2ChomeStarterName%2CawayStarterName%2CwinPitcherName%2ClosePitcherName%2ChomeCurrentPitcherName%2CawayCurrentPitcherName%2CbroadChannel&upperCategoryId={upperCategoryId}&categoryId={categoryId}&fromDate=2024-{month:02}-01&toDate=2024-{month:02}-{days_in_month}&roundCodes&size=500"
     return url
 
-async def crawling_schdule(upperCategoryId: str, categoryId: str):
+async def make_url_esports(esportsId):
+    year = datetime.now().year
+    month = datetime.now().month + 1
+    url = f'https://esports-api.game.naver.com/service/v2/schedule/month?month={year}-03&topLeagueId={esportsId}&relay=false'
+    return url
+
+#축구, 야구 crawling
+async def crawling_schdule(upperCategoryId: str, categoryId: str, count: int):
+
+    first_num = (count - 1) * 10
+    last_num = (count) * 10 - 1
+
+    game_schdule = {
+        'games':[
+        ]
+    }
     #crawling url
     url = await make_url(upperCategoryId, categoryId)
 
@@ -40,17 +62,19 @@ async def crawling_schdule(upperCategoryId: str, categoryId: str):
     #data에 포함된 games값 저장
     if data:
         games = data.get('result').get('games')
-
-        #각각의 game KBO_game_schdule dic에 저장
-        for game in games:
-
+        game_schdule['total_count'] = len(games)
+        #각각의 game sports dic에 저장
+        for i in range(first_num, last_num):
+            if i >= game_schdule['total_count']:
+                break
+            game = games[i]
             date, time = game.get('gameDateTime').split('T') #2024-05-31T18:30:00 -> date = '2024-05-31' / time = '18:30:00'
             weekname = weekDay(date) # 2024-05-31 -> 금
             date = date.replace('-', '')# 2024-05-31 -> date = 20240531
             hour, minute, _ = time.split(':') # 18:30:00 -> hour = 18 / minute = 30
 
 
-            KBO_game_schdule['games'].append(
+            game_schdule['games'].append(
                 {
                 'date':date,
                 'time':f'{hour}{minute}',
@@ -61,7 +85,54 @@ async def crawling_schdule(upperCategoryId: str, categoryId: str):
                 'homeTeamEmblemUrl':game.get('homeTeamEmblemUrl')
                 }
             )
-        return KBO_game_schdule
+        return game_schdule
     else:
         raise HTTPException(status_code=200, detail=400)
-        
+    
+#esports crawling
+async def espots_crawling_schdule(esportsId:str, count:int):
+
+    first_num = (count - 1) * 10
+    last_num = (count) * 10 - 1
+
+
+    game_schdule = {
+        'games':[
+        ] 
+    }
+    #crawling esports url
+    url = await make_url_esports(esportsId)
+    print(url)
+    #해당 url로 부터 데이터 받아오기
+    data = await tt(url)
+    #data에 포함된 games값 저장
+    if data:
+        games = data.get('content').get('matches')
+        game_schdule['total_count'] = len(games)
+        print(len(games))
+        #각각의 game esports dic에 저장
+        for i in range(first_num, last_num):
+            if i >= game_schdule['total_count']:
+                break
+            game = games[i]
+            date, time = change_date(game.get('startDate')).split(' ')  #2024-05-31 18:30 -> date = '2024-05-31' / time = '18:30:00'
+            weekname = weekDay(date) # 2024-05-31 -> 금
+            date = date.replace('-', '')# 2024-05-31 -> date = 20240531
+            hour, minute = time.split(':') # 18:30:00 -> hour = 18 / minute = 30
+
+
+            game_schdule['games'].append(
+                {
+                'date':date,
+                'time':f'{hour}{minute}',
+                'weekDay': weekname,
+                'homeTeamName' : game.get('homeTeam').get('nameAcronym'),
+                'homeTeamEmblemUrl' : game.get('homeTeam').get('imageUrl'),
+                'awayTeamName' : game.get('awayTeam').get('nameAcronym'),
+                'awayTeamEmblemUrl' : game.get('awayTeam').get('imageUrl')
+                }
+            )
+        return game_schdule
+    else:
+        raise HTTPException(status_code=200, detail=400)
+    
