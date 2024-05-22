@@ -1,8 +1,27 @@
 import re
-from typing import Optional
+from typing import List, Optional
 
 from database import settings
+from models import Base
 from pydantic import BaseModel
+from sqlalchemy.orm import Mapped, mapped_column
+
+
+# store 테이블
+class StoreModel(Base):
+    __tablename__ = "Store"
+
+    business_no: Mapped[int] = mapped_column(primary_key=True, nullable=False)
+    token: Mapped[str] = mapped_column(nullable=False)
+    store_name: Mapped[str] = mapped_column(nullable=False)
+    store_address: Mapped[str] = mapped_column(nullable=False)
+    store_address_road: Mapped[str] = mapped_column(nullable=False)
+    store_category: Mapped[str] = mapped_column(nullable=False)
+    store_contact_number: Mapped[str] = mapped_column(nullable=True)
+    image_url: Mapped[str] = mapped_column(nullable=False)
+    image_count: Mapped[int] = mapped_column(nullable=False)
+    screen_size: Mapped[int] = mapped_column(nullable=False)
+    delete_state: Mapped[bool] = mapped_column(nullable=False, default=False)
 
 
 # 사업자 인증번호 클래스
@@ -20,31 +39,6 @@ class Auth_Business_Registration_Number(BaseModel):
     def __params__(self):
         self.params = {"serviceKey": settings.BUSSINESS_SERVICE_KEY, "return_type": "JSON"}
         return self.params
-
-
-# 지도에 없는 가게 정보 추가 클래스
-class Add_New_StoreInfo(BaseModel):
-    place_name: str = None
-    address_name: str = None
-    road_address_name: str = None
-    category_group_name: str = None
-    phone: str = None
-
-    def __init__(
-        self,
-        place_name: str,
-        address_name: str,
-        road_address_name: str,
-        category_group_name: str,
-        phone: str,
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-        self.place_name = place_name
-        self.address_name = address_name
-        self.road_address_name = road_address_name
-        self.category_group_name = category_group_name
-        self.phone = phone
 
 
 # api에서 받아온 가게 정보 클래스

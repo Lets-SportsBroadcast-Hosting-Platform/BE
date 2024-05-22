@@ -4,14 +4,13 @@ import uuid
 from datetime import datetime
 
 import httpx
-from auth.jwt import create_jwt_access_token, verify_access_token
-from database import get_db, settings
+from auth.jwt import create_jwt_access_token
+from database import settings
 from database.search_query import query_response
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException
 from models.user_table import (
     AuthModel,
     UserModel,
-    authlogin_client2server,
     login_result_server2client,
     ssologin_client2server,
     userInfo_server2client,
@@ -20,44 +19,10 @@ from sqlalchemy import ScalarResult, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-# 소셜 로그인 함수
-async def sso(req: ssologin_client2server, db: AsyncSession = Depends(get_db)):
-    if req.provider.lower() == "kakao":
-        return await login_by_kakao(req, db)
-    elif req.provider.lower() == "naver":
-        return await login_by_naver(req, db)
-    else:
-        raise HTTPException(status_code=200, detail=400)
-        # raise HTTPException(status_code=403, detail="잘못된 소셜 로그인을 하셨습니다.")
-
-
-# 클라이언트에서 토큰으로 로그인
-async def login_as_token(
-    jwToken: authlogin_client2server, db: AsyncSession = Depends(get_db)
-) -> userInfo_server2client:
-    decode_jwt_token = verify_access_token(jwToken.jwt_token)
-    query = select(AuthModel).where(
-        AuthModel.token == decode_jwt_token.get("auth_token"),
-        AuthModel.provider == decode_jwt_token.get("provider"),
-    )
-    if not (await query_response(query, db)).one_or_none():
-        raise HTTPException(status_code=200, detail=400)
-        # raise HTTPException(status_code=400, detail="인증에 실패했습니다.")
-    user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
-    query = select(UserModel).where(UserModel.user_id == str(user_id))
-    result = (await query_response(query, db)).one_or_none()
-    if result:
-        return userInfo_server2client(user_instance=result)
-    else:
-        raise HTTPException(status_code=200, detail=400)
-        # raise HTTPException(status_code=400, detail="DB에 유저가 없습니다.")
-
-
-# 카카오 로그인 함수 구현
+# 카카오 로그인 함수 구현 CQRS : Create
 async def login_by_kakao(
-    req: ssologin_client2server, db: AsyncSession
+    req: ssologin_client2server, region: str, alarm: bool, db: AsyncSession
 ) -> login_result_server2client:
-    print("카카오 로그인 시도", flush=True)
     url = "https://kapi.kakao.com/v2/user/me"
     headers = {
         "Content-Type": "application/json",
@@ -68,31 +33,25 @@ async def login_by_kakao(
         response = json.loads((await client.post(url, headers=headers)).text)
         if not response:
             raise HTTPException(status_code=200, detail=400)
-            # raise HTTPException(status_code=400, detail="응답이 오지 않음")
-        res = await user_auth_db(*make_user_data(response, req.provider), db)
+        res = await user_auth_db(*make_user_data(response, req.provider, region, alarm), db)
         if type(res) == ValueError:
             raise HTTPException(status_code=200, detail=400)
-            # raise HTTPException(status_code=422, detail=str(res))
         return login_result_server2client(jwt_token=res[0], instance=res[-1])
 
 
-# 네이버 로그인 함수 구현
+# 네이버 로그인 함수 구현 CQRS : Create
 async def login_by_naver(
-    req: ssologin_client2server, db: AsyncSession
+    req: ssologin_client2server, region: str, alarm: bool, db: AsyncSession
 ) -> login_result_server2client:
-    print("네이버 로그인 시도", flush=True)
     access_token = await naver_auth_token(req)
     if not access_token:
         raise HTTPException(status_code=200, detail=400)
-        # raise HTTPException(status_code=403, detail="엑세스 토큰이 발급되지 않음")
     response = await naver_get_data(access_token)
     if not response:
         raise HTTPException(status_code=200, detail=400)
-        # raise HTTPException(status_code=404, detail="응답이 오지 않음")
-    res = await user_auth_db(*make_user_data(response, req.provider), db)
+    res = await user_auth_db(*make_user_data(response, req.provider, region, alarm), db)
     if type(res) == ValueError:
         raise HTTPException(status_code=200, detail=400)
-        # raise HTTPException(status_code=400, detail=str(res))
     return login_result_server2client(jwt_token=res[0], instance=res[-1])
 
 
@@ -113,7 +72,7 @@ async def naver_get_data(access_token: str) -> dict:
 
 
 # 응답 받은 유저 정보를 db에 넘기기 위한 모델로 변환하는 함수
-def make_user_data(response: dict, provider: str) -> (UserModel, AuthModel):  # type: ignore
+def make_user_data(response: dict, provider: str, region: str, alarm: bool) -> (UserModel, AuthModel):  # type: ignore
     print("유저 정보", response)
     if provider == "kakao":
         response = response.get("kakao_account")
@@ -125,11 +84,11 @@ def make_user_data(response: dict, provider: str) -> (UserModel, AuthModel):  # 
 
     user_data = UserModel(
         user_id=str(user_uuid),
-        mail=response.get("email"),
         name=response.get("name"),
         gender=user_gender,
         birthyear=response.get("birthyear"),
-        birthday=response.get("birthday").replace("-", ""),
+        region=region,
+        alarm=alarm,
     )
     auth_data = AuthModel(token=str(base64.b64encode(user_uuid.bytes))[2:-1], provider=provider)
     return user_data, auth_data
@@ -150,9 +109,7 @@ async def user_auth_db(
         else:  # ValueError일때
             return jwt_token_or_error
     else:
-        print("유저 없음", flush=True)
-        user_table.region, user_table.alarm = "서울", False
-        auth_table.create_time = user_table.join_date = datetime.today()
+        auth_table.create_time = datetime.today()
         db.add_all([user_table, auth_table])
         await db.commit()
         await db.refresh(user_table)
@@ -163,7 +120,8 @@ async def user_auth_db(
 
 # user table에 가입되어 있는지 확인
 async def user_db_check(data: UserModel, db: AsyncSession) -> (bool, UserModel | None):  # type: ignore
-    _query = select(UserModel).where(UserModel.name == data.name, UserModel.mail == data.mail)
+
+    _query = select(UserModel).where(UserModel.name == data.name, UserModel.user_id == data.user_id)
     existing_id = (await query_response(_query, db)).one_or_none()
     return True if existing_id else False, existing_id
 
