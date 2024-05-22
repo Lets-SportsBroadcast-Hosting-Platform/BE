@@ -10,17 +10,20 @@ from sqlalchemy.orm import Mapped, mapped_column
 class HostingModel(Base):
     __tablename__ = "Hosting"
 
-    hosting_name: Mapped[str] = mapped_column(primary_key=True, nullable=False)
+    hosting_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    hosting_name: Mapped[str] = mapped_column(nullable=False)
     business_no: Mapped[int] = mapped_column(nullable=False)
     introduce: Mapped[str] = mapped_column(nullable=False)
-    cur_personnel: Mapped[int] = mapped_column(nullable=False)
+    cur_personnel: Mapped[int] = mapped_column(nullable=False, default=0)
     max_personnel: Mapped[int] = mapped_column(nullable=False)
-    age_group_start: Mapped[int] = mapped_column(nullable=False)
+    age_group_start: Mapped[int] = mapped_column(nullable=False, default=0)
     age_group_end: Mapped[int] = mapped_column(nullable=False)
-    screen_size: Mapped[int] = mapped_column(nullable=False)
-    start_time: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
+    game_start_date: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
+    active_state: Mapped[bool] = mapped_column(nullable=False, default=True)
+    delete_state: Mapped[bool] = mapped_column(nullable=False, default=False)
 
 
+# 클라이언트에서 요청받은 데이터
 class HostingData(BaseModel):
     hosting_name: str = None
     business_no: int = None
@@ -29,8 +32,7 @@ class HostingData(BaseModel):
     max_personnel: int = None
     age_group_start: int = None
     age_group_end: int = None
-    screen_size: int = None
-    start_time: datetime = None
+    game_start_date: datetime = None
 
     def to_HostingModel(self):
         return HostingModel(
@@ -41,8 +43,7 @@ class HostingData(BaseModel):
             max_personnel=self.max_personnel,
             age_group_start=self.age_group_start,
             age_group_end=self.age_group_end,
-            screen_size=self.screen_size,
-            start_time=self.start_time,
+            game_start_date=self.game_start_date,
         )
 
     # def __init__(self, instance: HostingModel = None, **kwargs):

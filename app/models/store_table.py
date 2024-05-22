@@ -2,10 +2,8 @@ import re
 from typing import List, Optional
 
 from database import settings
-from fastapi import File, UploadFile
 from models import Base
 from pydantic import BaseModel
-from sqlalchemy import null
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -15,14 +13,15 @@ class StoreModel(Base):
 
     business_no: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     token: Mapped[str] = mapped_column(nullable=False)
-    place_name: Mapped[str] = mapped_column(nullable=False)
-    address_name: Mapped[str] = mapped_column(nullable=False)
-    road_address_name: Mapped[str] = mapped_column(nullable=True)
-    category_group_name: Mapped[str] = mapped_column(nullable=True)
-    phone: Mapped[str] = mapped_column(nullable=False)
+    store_name: Mapped[str] = mapped_column(nullable=False)
+    store_address: Mapped[str] = mapped_column(nullable=False)
+    store_address_road: Mapped[str] = mapped_column(nullable=False)
+    store_category: Mapped[str] = mapped_column(nullable=False)
+    store_contact_number: Mapped[str] = mapped_column(nullable=True)
     image_url: Mapped[str] = mapped_column(nullable=False)
     image_count: Mapped[int] = mapped_column(nullable=False)
-    introduce: Mapped[str] = mapped_column(nullable=False)
+    screen_size: Mapped[int] = mapped_column(nullable=False)
+    delete_state: Mapped[bool] = mapped_column(nullable=False, default=False)
 
 
 # 사업자 인증번호 클래스
