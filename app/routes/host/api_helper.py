@@ -4,11 +4,11 @@ from typing import List
 
 import httpx
 from database import _s3, settings
-from database.search_query import query_response
+from database.search_query import query_response, update_response, delete_response
 from fastapi import HTTPException, Response, UploadFile
 from models.store_table import StoreModel, storeData
 from PIL import Image
-from sqlalchemy import select
+from sqlalchemy import *
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -87,9 +87,25 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
 
 async def host_read_store(business_no: int, db: AsyncSession):
     _query = select(StoreModel).where(StoreModel.business_no == business_no)
-    existing_store = (await query_response(_query, db)).one_or_none()
+    existing_store = (await query_response(_query, db))
+    print(existing_store)
     if existing_store:
-        return existing_store
+        # 객체의 컬럼 값을 가져오기
+        existing_store = existing_store[0]
+        store_details = {
+            "business_no": existing_store.business_no,
+            "token": existing_store.token,
+            "store_name": existing_store.store_name,
+            "store_address": existing_store.store_address,
+            "store_address_road": existing_store.store_address_road,
+            "store_category": existing_store.store_category,
+            "store_contact_number": existing_store.store_contact_number,
+            "image_url": existing_store.image_url,
+            "image_count": existing_store.image_count,
+            "screen_size": existing_store.screen_size,
+            "delete_state": existing_store.delete_state
+        }
+        return store_details
     else:
         raise HTTPException(status_code=200, detail=400)
 
@@ -102,3 +118,15 @@ async def user_read_store(store_name: str, db: AsyncSession):
         return existing_store.store_name
     else:
         raise HTTPException(status_code=200, detail=400)
+
+async def host_update_store(business_no: int, screen: int, db: AsyncSession):
+    value = {
+        StoreModel.screen_size : screen
+    }
+    _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
+    await update_response(_query, db)
+
+async def host_delete_store(business_no: int, db: AsyncSession):
+    _query = delete(StoreModel).where(StoreModel.business_no == business_no)
+    await delete_response(_query,db)
+

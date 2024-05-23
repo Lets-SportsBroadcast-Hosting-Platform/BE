@@ -13,6 +13,8 @@ from routes.host.api_helper import (
     naver_searchlist,
     s3_upload,
     user_read_store,
+    host_update_store,
+    host_delete_store,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -82,6 +84,21 @@ async def read_store(
     db: AsyncSession = Depends(get_db),
 ):
     if business_no:
-        await host_read_store(business_no, db)
+        result = await host_read_store(business_no, db)
     else:
-        await user_read_store(store_name, db)
+        result = await user_read_store(store_name, db)
+    #result = await host_read_store(business_no, db)
+    return result
+
+async def update_store(
+    screen: int,
+    business_no: int,
+    db: AsyncSession = Depends(get_db),
+):
+    await host_update_store(screen, business_no, db)
+
+async def delete_store(
+    business_no: int,
+    db: AsyncSession = Depends(get_db),
+):
+    await host_delete_store(business_no, db)
