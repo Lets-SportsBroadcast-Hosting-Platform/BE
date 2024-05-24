@@ -11,6 +11,10 @@ from starlette.middleware import Middleware
 from routes import host_routers, hosting_routers, login_routers, sports_crawl_routers
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+expose_headers=[
+
+]
+
 middleware = [Middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -52,7 +56,7 @@ async def healthcheck():
     return {"status": "healthy"}
 
 
-@app.get("/hello")
+@app.post("/hello")
 async def hello(strange_header: Annotated[str | None, Header(convert_underscores=False)] = None):
     return {"strange_header": strange_header}
 
