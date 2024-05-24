@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 # 데이터베이스 테이블 연결하는 클래스
 class conn_db:
     def __init__(self, engine_url):
-        self.engine = create_async_engine(engine_url, echo=True)
+        self.engine = create_async_engine(engine_url, echo=False)
         try:
             self.engine.connect()
             print("db 연결됨")

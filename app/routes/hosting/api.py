@@ -1,7 +1,7 @@
 from database import get_db
 from fastapi import Depends, HTTPException
 from models.hosting_table import HostingData
-from routes.hosting.api_helper import insert_hosting_table, read_hosting_table
+from routes.hosting.api_helper import insert_hosting_table, read_hosting_table, read_hosting_tables
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -15,6 +15,13 @@ async def make_hosting(hostingdata: HostingData, db: AsyncSession = Depends(get_
 
 
 # 클라이언트에서 호스팅 id를 받아 응답하는 함수
+async def read_hostings(hosting_name: int, db: AsyncSession = Depends(get_db)):
+    result = await read_hosting_tables(hosting_name, db)
+    if result:
+        return result
+    else:
+        raise HTTPException(status_code=200, detail=400)
+
 async def read_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
     result = await read_hosting_table(hosting_id, db)
     if result:

@@ -47,6 +47,11 @@ async def index():
     return "Hello this is Let's Server"
 
 
+@app.get("/healthcheck")
+async def healthcheck():
+    return {"status": "healthy"}
+
+
 @app.get("/hello")
 async def hello(strange_header: Annotated[str | None, Header(convert_underscores=False)] = None):
     return {"strange_header": strange_header}

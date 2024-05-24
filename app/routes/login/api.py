@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from auth.jwt import verify_access_token
 from database import get_db
-from database.search_query import query_response
+from database.search_query import query_response_one
 from fastapi import Depends, Header, HTTPException, Response
 from models.user_table import (
     AuthModel,
@@ -46,11 +46,11 @@ async def login_as_token(
         AuthModel.token == decode_jwt_token.get("auth_token"),
         AuthModel.provider == decode_jwt_token.get("provider"),
     )
-    if not (await query_response(query, db)).one_or_none():
+    if not (await query_response_one(query, db)).one_or_none():
         raise HTTPException(status_code=200, detail=400)
     user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
     query = select(UserModel).where(UserModel.user_id == str(user_id))
-    result = (await query_response(query, db)).one_or_none()
+    result = (await query_response_one(query, db)).one_or_none()
     if result:
         return Response("Success")
     else:

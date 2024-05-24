@@ -48,5 +48,5 @@ def make_url(upperCategoryId, categoryId):
 def make_url_esports(esportsId):
     year = datetime.now().year
     month = datetime.now().month + 1
-    url = f"https://esports-api.game.naver.com/service/v2/schedule/month?month={year}-03&topLeagueId={esportsId}&relay=false"
+    url = f"https://esports-api.game.naver.com/service/v2/schedule/month?month={year}-{month:02}&topLeagueId={esportsId}&relay=false"
     return url

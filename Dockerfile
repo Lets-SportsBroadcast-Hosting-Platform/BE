@@ -1,4 +1,4 @@
-FROM python:3.11.9-slim
+FROM --platform=linux/amd64 python:3.11.9-slim as build
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -32,9 +32,16 @@ RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" > /code/app/.env && \
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-WORKDIR /code/app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /usr/src
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+
+WORKDIR /usr/src/app
+COPY ./app /usr/src/app
 
 EXPOSE 80
-
 CMD ["uvicorn", "main:app","--host", "0.0.0.0", "--port", "80"]
-# CMD ["uvicorn", "main:app", "--proxy-headers","--host","0.0.0.0", "--port", "80"]
