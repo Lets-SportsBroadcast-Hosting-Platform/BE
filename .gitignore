@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 app/.env
 app/__pycache__
 app/auth/__pycache__
@@ -15,6 +14,3 @@ myvenv
 # git rm -r --cached .
 # git add .
 # git commit -m "fixed untracked files"
-=======
-/myvenv
->>>>>>> 0d1844c19d65550fd5461c0fce11c15947e29262

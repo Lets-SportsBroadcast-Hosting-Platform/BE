@@ -19,14 +19,23 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(schdule_routers, prefix="/mainpage")
 
+
 @app.get("/")
 async def index():
     return "Hello this is Let's Server"
+
 
 @app.get("/hello")
 async def hello():
     return "Hello"
 
+
+@app.get("/healthcheck")
+async def healthchect():
+    return {"status": "healthy"}
+
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
