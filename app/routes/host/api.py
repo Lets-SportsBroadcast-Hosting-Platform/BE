@@ -23,7 +23,7 @@ common_header = {"Accept": "application/json", "Content-Type": "application/json
 
 # 사업자 번호 인증 함수
 async def auth_business_num(
-    bno: str# bno: Annotated[str | None, Header(convert_underscores=False)] = None
+    bno: Annotated[str | None, Header(convert_underscores=False)] = None
 ) -> dict:
     business_num = Auth_Business_Registration_Number(b_no=bno)
     print(business_num.b_no)
@@ -63,7 +63,6 @@ async def searchlist(keyword: str, provider: str):
 async def insert_store(
     data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)
 ):
-    return "insert_store"
     store_table = make_store_data(json.loads(data), len(photos))
     print(store_table)
     if not await check_bno(store_table.business_no, db):
