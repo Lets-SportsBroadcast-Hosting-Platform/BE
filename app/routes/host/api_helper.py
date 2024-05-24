@@ -4,7 +4,7 @@ from typing import List
 
 import httpx
 from database import _s3, settings
-from database.search_query import query_response, update_response, delete_response
+from database.search_query import query_response, query_response_one, update_response, delete_response
 from fastapi import HTTPException, Response, UploadFile
 from models.store_table import StoreModel, storeData
 from PIL import Image
@@ -44,7 +44,7 @@ async def naver_searchlist(keyword: str, provider: str) -> storeData:
 # Store 테이블에 사업자 번호기 존재하는지 확인하는 함수
 async def check_bno(b_no: int, db: AsyncSession):
     _query = select(StoreModel).where(StoreModel.business_no == b_no)
-    return True if (await query_response(_query, db)).one_or_none() else False
+    return True if (await query_response_one(_query, db)).one_or_none() else False
 
 
 # 클라이언트에서 받은 데이터를 StoreModel화하는 함수
@@ -57,7 +57,7 @@ def make_store_data(data: json, img_count: int) -> StoreModel:
         store_address_road=data.get("store_address_road"),
         store_contact_number=data.get("store_contact_number"),
         store_category=data.get("store_category"),
-        image_url=f"https://letsapp.store/{data.get('business_no')}/",
+        image_url=f"https://s3.ap-northeast-2.amazonaws.com/letsapp.store/{data.get('business_no')}/",
         image_count=img_count,
         screen_size=data.get("screen_size"),
     )
@@ -71,10 +71,13 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
             image_data = await photos[file_no].read()
             image = Image.open(io.BytesIO(image_data))
             print(image.mode)
+            output = io.BytesIO()
             if image.mode in ("RGBA", "RGBX", "LA", "P", "PA"):
                 rgb_image = image.convert("RGB")
-            output = io.BytesIO()
-            rgb_image.save(output, format="JPEG", quality=80, optimize=True)
+                rgb_image.save(output, format="JPEG", quality=80, optimize=True)
+            else:
+                image.save(output, format="JPEG", quality=80, optimize=True)
+            
             _s3.upload_file_in_chunks(
                 photo=output,
                 bucket_name=_s3.bucket_name,
@@ -109,7 +112,7 @@ async def host_read_store(business_no: int, db: AsyncSession):
     else:
         raise HTTPException(status_code=200, detail=400)
 
-
+# 체크 해봐야 함
 async def user_read_store(store_name: str, db: AsyncSession):
     _query = select(StoreModel).where(StoreModel.store_name == store_name)
     existing_store = (await query_response(_query, db)).one_or_none()

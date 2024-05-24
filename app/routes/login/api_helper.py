@@ -6,7 +6,7 @@ from datetime import datetime
 import httpx
 from auth.jwt import create_jwt_access_token
 from database import settings
-from database.search_query import query_response
+from database.search_query import query_response_one
 from fastapi import HTTPException
 from models.user_table import (
     AuthModel,
@@ -122,7 +122,7 @@ async def user_auth_db(
 async def user_db_check(data: UserModel, db: AsyncSession) -> (bool, UserModel | None):  # type: ignore
 
     _query = select(UserModel).where(UserModel.name == data.name, UserModel.user_id == data.user_id)
-    existing_id = (await query_response(_query, db)).one_or_none()
+    existing_id = (await query_response_one(_query, db)).one_or_none()
     return True if existing_id else False, existing_id
 
 
@@ -143,5 +143,5 @@ async def token_verify_db(user_id: str, provider: str, db: AsyncSession) -> str 
 async def auth_table_check_by_userid(user_id: str, db: AsyncSession) -> ScalarResult | bool:
     user_id_to_token = base64.b64encode(uuid.UUID(user_id).bytes)
     query = select(AuthModel).where(AuthModel.token == str(user_id_to_token)[2:-1])
-    result = (await query_response(query, db)).one_or_none()
+    result = (await query_response_one(query, db)).one_or_none()
     return result if result else False
