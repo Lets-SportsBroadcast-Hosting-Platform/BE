@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:767397715593:task-definition/lets-task:8",
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:767397715593:task-definition/lets-task:10",
     "containerDefinitions": [
         {
             "name": "lets",
@@ -15,10 +15,8 @@
             ],
             "essential": true,
             "environment": [],
-            "environmentFiles": [],
             "mountPoints": [],
             "volumesFrom": [],
-            "ulimits": [],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
@@ -26,8 +24,7 @@
                     "awslogs-group": "/ecs/lets-task",
                     "awslogs-region": "ap-northeast-2",
                     "awslogs-stream-prefix": "ecs"
-                },
-                "secretOptions": []
+                }
             },
             "systemControls": []
         }
@@ -35,7 +32,7 @@
     "family": "lets-task",
     "executionRoleArn": "arn:aws:iam::767397715593:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 8,
+    "revision": 10,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -46,7 +43,13 @@
             "name": "ecs.capability.execution-role-awslogs"
         },
         {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
         },
         {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
@@ -72,7 +75,7 @@
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2024-05-24T06:20:50.752Z",
-    "registeredBy": "arn:aws:iam::767397715593:root",
+    "registeredAt": "2024-05-24T06:46:10.409Z",
+    "registeredBy": "arn:aws:sts::767397715593:assumed-role/lets_server_role/sampleSessionName",
     "tags": []
 }
