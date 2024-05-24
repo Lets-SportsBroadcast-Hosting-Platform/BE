@@ -17,8 +17,13 @@ from routes.host.api_helper import (
     host_delete_store,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from pydantic import BaseModel
 common_header = {"Accept": "application/json", "Content-Type": "application/json"}
+
+class StoreUpdateModel(BaseModel):
+    store_address : str
+    store_address_road : str
+    store_name : str
 
 
 # 사업자 번호 인증 함수
@@ -91,14 +96,22 @@ async def read_store(
     return result
 
 async def update_store(
-    screen: int,
-    business_no: int,
+    storeupdatemodel: StoreUpdateModel,
+    business_no: Annotated[str | None, Header(convert_underscores=False)] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    await host_update_store(screen, business_no, db)
+    try:
+        await host_update_store(storeupdatemodel, business_no, db)
+        return "Update Success"
+    except:
+        raise HTTPException(status_code=200, detail=400) 
 
 async def delete_store(
-    business_no: int,
+    business_no: Annotated[str | None, Header(convert_underscores=False)] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    await host_delete_store(business_no, db)
+    try:
+        await host_delete_store(business_no, db)
+        return "Delete Success"
+    except:
+        raise HTTPException(status_code=200, detail=400)

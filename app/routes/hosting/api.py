@@ -15,8 +15,8 @@ async def make_hosting(hostingdata: HostingData, db: AsyncSession = Depends(get_
 
 
 # 클라이언트에서 호스팅 id를 받아 응답하는 함수
-async def read_hostings(hosting_name: int, db: AsyncSession = Depends(get_db)):
-    result = await read_hosting_tables(hosting_name, db)
+async def read_hostings(business_no: int, db: AsyncSession = Depends(get_db)):
+    result = await read_hosting_tables(business_no, db)
     if result:
         return result
     else:

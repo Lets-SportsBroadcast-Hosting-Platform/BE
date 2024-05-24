@@ -10,9 +10,15 @@ from models.store_table import StoreModel, storeData
 from PIL import Image
 from sqlalchemy import *
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
 
+class StoreUpdateModel(BaseModel):
+    store_address : str
+    store_address_road : str
+    store_name : str
 
 # 카카오 검색 함수
+
 async def kakao_searchlist(keyword: str, provider: str) -> storeData:
     url = "https://dapi.kakao.com/v2/local/search/keyword.json"
     header = {"Authorization": f"KakaoAK {settings.KAKAO_RESTAPI_KEY}"}
@@ -119,14 +125,20 @@ async def user_read_store(store_name: str, db: AsyncSession):
     else:
         raise HTTPException(status_code=200, detail=400)
 
-async def host_update_store(business_no: int, screen: int, db: AsyncSession):
+
+async def host_update_store(data: StoreUpdateModel, business_no: int, db: AsyncSession):
     value = {
-        StoreModel.screen_size : screen
+        StoreModel.store_address : data.store_address,
+        StoreModel.store_address_road : data.store_address_road,
+        StoreModel.store_name : data.store_name
     }
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
     await update_response(_query, db)
 
 async def host_delete_store(business_no: int, db: AsyncSession):
-    _query = delete(StoreModel).where(StoreModel.business_no == business_no)
-    await delete_response(_query,db)
+    value = {
+        StoreModel.delete_state : True
+    }
+    _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
+    await update_response(_query,db)
 
