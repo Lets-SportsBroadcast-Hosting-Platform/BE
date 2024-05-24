@@ -11,14 +11,10 @@ from starlette.middleware import Middleware
 from routes import host_routers, hosting_routers, login_routers, sports_crawl_routers
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-expose_headers=[
-
-]
-
 middleware = [Middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],)
     ]
