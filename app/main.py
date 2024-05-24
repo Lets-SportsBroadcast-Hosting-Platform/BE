@@ -6,21 +6,21 @@ from fastapi.exception_handlers import (
     request_validation_exception_handler,
 )
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware import Middleware
 from routes import host_routers, hosting_routers, login_routers, sports_crawl_routers
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-# FastAPI
-app = FastAPI()
-
-# CORS
-app.add_middleware(
+middleware = [Middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://letsapp.store","http://letsALB-306324822.ap-northeast-2.elb.amazonaws.com"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
-)
+    allow_headers=["*"],)
+    ]
+
+# FastAPI
+app = FastAPI(middleware=middleware)
 
 
 @app.exception_handler(StarletteHTTPException)
