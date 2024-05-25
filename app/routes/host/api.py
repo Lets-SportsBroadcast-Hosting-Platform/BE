@@ -1,9 +1,9 @@
 import json
-from typing import Annotated, List
+from typing import Annotated
 
 import httpx
 from database import get_db
-from fastapi import Depends, File, Form, Header, HTTPException, UploadFile
+from fastapi import Depends, Form, Header, HTTPException
 from models.store_table import Auth_Business_Registration_Number
 from routes.host.api_helper import (
     check_bno,
@@ -25,6 +25,14 @@ class StoreUpdateModel(BaseModel):
     store_address_road : str
     store_name : str
 
+class StoreinsertModel(BaseModel):
+    business_no:int
+    token:str
+    store_name:str
+    store_address:str
+    store_address_road:str
+    store_category:str
+    store_contact_number:str
 
 # 사업자 번호 인증 함수
 async def auth_business_num(
@@ -66,15 +74,18 @@ async def searchlist(keyword: str, provider: str):
 
 # s3에 이미지를 올리고 db에 데이터를 커밋하는 api 함수
 async def insert_store(
-    data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)
+    storeinsertmodel: StoreinsertModel, db: AsyncSession = Depends(get_db)
 ):
-    store_table = make_store_data(json.loads(data), len(photos))
+    store_table = make_store_data(storeinsertmodel)
+
+
+    #store_table = make_store_data(json.loads(data), len(photos))
     print(store_table)
-    if not await check_bno(store_table.business_no, db):
+    '''if not await check_bno(store_table.business_no, db):
         _check_s3_upload = await s3_upload(str(store_table.business_no), photos)
     else:
-        raise HTTPException(status_code=200, detail=400)
-    if _check_s3_upload:
+        raise HTTPException(status_code=200, detail=400)'''
+    if not await check_bno(store_table.business_no, db):
         db.add(store_table)
         await db.commit()
         return "Upload Success"

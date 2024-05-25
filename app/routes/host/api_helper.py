@@ -11,11 +11,11 @@ from PIL import Image
 from sqlalchemy import *
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
-
-class StoreUpdateModel(BaseModel):
+from .models.store_models import StoreinsertModel, StoreUpdateModel
+'''class StoreUpdateModel(BaseModel):
     store_address : str
     store_address_road : str
-    store_name : str
+    store_name : str'''
 
 # 카카오 검색 함수
 
@@ -50,22 +50,19 @@ async def naver_searchlist(keyword: str, provider: str) -> storeData:
 # Store 테이블에 사업자 번호기 존재하는지 확인하는 함수
 async def check_bno(b_no: int, db: AsyncSession):
     _query = select(StoreModel).where(StoreModel.business_no == b_no)
-    return True if (await query_response(_query, db)).one_or_none() else False
+    return True if (await query_response(_query, db)) else False
 
 
 # 클라이언트에서 받은 데이터를 StoreModel화하는 함수
-def make_store_data(data: json, img_count: int) -> StoreModel:
+def make_store_data(data: StoreinsertModel) -> StoreModel:
     store_data = StoreModel(
-        business_no=data.get("business_no"),
-        token=data.get("token"),
-        store_name=data.get("store_name"),
-        store_address=data.get("store_address"),
-        store_address_road=data.get("store_address_road"),
-        store_contact_number=data.get("store_contact_number"),
-        store_category=data.get("store_category"),
-        image_url=f"https://letsapp.store/{data.get('business_no')}/",
-        image_count=img_count,
-        screen_size=data.get("screen_size"),
+        business_no=data.business_no,
+        token=data.token,
+        store_name=data.store_name,
+        store_address=data.store_address,
+        store_address_road=data.store_address_road,
+        store_contact_number=data.store_contact_number,
+        store_category=data.store_category,
     )
     return store_data
 
@@ -90,7 +87,8 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
     else:
         return False
 
-
+#async def s3_delete(folder: str):
+    
 async def host_read_store(business_no: int, db: AsyncSession):
     _query = select(StoreModel).where(StoreModel.business_no == business_no)
     existing_store = (await query_response(_query, db))
@@ -142,3 +140,11 @@ async def host_delete_store(business_no: int, db: AsyncSession):
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
     await update_response(_query,db)
 
+async def host_update_image(data: dict, business_no:int, db: AsyncSession):
+    value = {
+        StoreModel.image_url : data['image_url'],
+        StoreModel.image_count : data['image_count'],
+        StoreModel.screen_size : data['screen_size']
+    }
+    _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
+    await update_response(_query,db)

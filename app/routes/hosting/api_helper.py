@@ -1,16 +1,26 @@
 from datetime import datetime
 
-from database.search_query import query_response
+from database.search_query import query_response, update_response
 from fastapi import HTTPException
 from models.hosting_table import HostingModel
-from sqlalchemy import select
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
-
-
+from routes.hosting.models.hosting_models import HostinginsertModel
+from routes.host.api_helper import host_update_image  
 # Hosting 테이블에 insert 하는 함수 CQRS : Create
-async def insert_hosting_table(hostingModel: HostingModel, db: AsyncSession) -> bool:
+async def insert_hosting_table(hostingModel: HostinginsertModel, db: AsyncSession) -> bool:
     try:
-        db.add(hostingModel)
+        hostings = HostingModel(
+            hosting_name=hostingModel.hosting_name,
+            business_no=hostingModel.business_no,
+            introduce=hostingModel.introduce,
+            current_personnel=hostingModel.current_personnel,
+            max_personnel=hostingModel.max_personnel,
+            age_group_start=hostingModel.age_group_start,
+            hosting_data=hostingModel.hosting_data,
+        )
+        print(hostings)
+        db.add(hostings)
         await db.commit()
         return True
     except:
@@ -67,3 +77,19 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
         return hosting_list
     else:
         raise HTTPException(status_code=200, detail=400)
+    
+async def delete_hosting_table(hosting_id: int, db: AsyncSession):
+    value = {
+        HostingModel.active_state : False,
+        HostingModel.delete_state : True
+    }
+    _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
+    await update_response(_query,db)
+
+async def update_hosting_table(hosting_id: int, db: AsyncSession):
+    value = {
+        HostingModel.active_state : False,
+        HostingModel.delete_state : True
+    }
+    _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
+    await update_response(_query,db)
