@@ -25,6 +25,7 @@ common_header = {"Accept": "application/json", "Content-Type": "application/json
 async def auth_business_num(
     bno: Annotated[str | None, Header(convert_underscores=False)] = None
 ) -> dict:
+    print(bno)
     business_num = Auth_Business_Registration_Number(b_no=bno)
     print(business_num.b_no)
     url = "http://api.odcloud.kr/api/nts-businessman/v1/status?"
