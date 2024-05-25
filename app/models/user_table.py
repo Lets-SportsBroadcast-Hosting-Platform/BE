@@ -17,6 +17,7 @@ class UserModel(Base):
     birthyear: Mapped[int] = mapped_column(nullable=False)
     region: Mapped[str] = mapped_column(nullable=False)
     alarm: Mapped[bool] = mapped_column(nullable=False)
+    delete_state: Mapped[bool] = mapped_column(nullable=False, default=False)
 
 
 # 인증 테이블 CQRS : Create
