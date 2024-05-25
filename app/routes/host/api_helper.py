@@ -139,12 +139,3 @@ async def host_delete_store(business_no: int, db: AsyncSession):
     }
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
     await update_response(_query,db)
-
-async def host_update_image(data: dict, business_no:int, db: AsyncSession):
-    value = {
-        StoreModel.image_url : data['image_url'],
-        StoreModel.image_count : data['image_count'],
-        StoreModel.screen_size : data['screen_size']
-    }
-    _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
-    await update_response(_query,db)

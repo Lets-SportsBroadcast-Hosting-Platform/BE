@@ -49,7 +49,7 @@ async def login_as_token(
     if not (await query_response(query, db)).one_or_none():
         raise HTTPException(status_code=200, detail=400)
     user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
-    query = select(UserModel).where(UserModel.user_id == str(user_id))
+    query = select(UserModel).where(UserModel.id == str(user_id))
     result = (await query_response(query, db)).one_or_none()
     if result:
         return Response("Success")

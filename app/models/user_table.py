@@ -3,7 +3,7 @@ from typing import Optional
 
 from models import Base
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import func
+from sqlalchemy import func, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -11,14 +11,15 @@ from sqlalchemy.orm import Mapped, mapped_column
 class UserModel(Base):
     __tablename__ = "User"
 
-    user_id: Mapped[str] = mapped_column(primary_key=True, nullable=False)  # type: ignore
+    id: Mapped[str] = mapped_column(primary_key=True, nullable=False)  # type: ignore
     name: Mapped[str] = mapped_column(nullable=False)
     gender: Mapped[str] = mapped_column(nullable=False)
     birthyear: Mapped[int] = mapped_column(nullable=False)
-    region: Mapped[str] = mapped_column(nullable=False)
+    area: Mapped[str] = mapped_column(nullable=False)
     alarm: Mapped[bool] = mapped_column(nullable=False)
-
-
+    create_time: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
+    update_time: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True, onupdate=func.now())
+    delete_state: Mapped[bool] = mapped_column(nullable=False, default=False)
 # 인증 테이블 CQRS : Create
 class AuthModel(Base):
     __tablename__ = "Auth"
@@ -33,14 +34,14 @@ class userInfo_server2client(BaseModel):
     name: Optional[str] = None
     gender: Optional[str] = None
     birthyear: Optional[str] = None
-    region: Optional[str] = None
+    area: Optional[str] = None
 
     def __init__(self, user_instance: UserModel, **kwargs):
         super().__init__(**kwargs)
         self.name = user_instance.name
         self.gender = user_instance.gender
         self.birthyear = user_instance.birthyear
-        self.region = user_instance.region
+        self.area = user_instance.area
 
 
 # 로그인 인증 반환

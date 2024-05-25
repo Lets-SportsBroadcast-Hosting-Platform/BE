@@ -18,14 +18,15 @@ async def read_hosting_tables(db: AsyncSession) -> HostingModel:
         for response in responses:
             #response = response[0]
             hosting_list.append({
+                "hosting_id" : response.hosting_id,
                 "hosting_name": response.hosting_name,
                 "business_no": response.business_no,
                 "introduce": response.introduce,
-                "cur_personnel": response.cur_personnel,
+                "current_personnel": response.current_personnel,
                 "max_personnel": response.max_personnel,
                 "age_group_start": response.age_group_start,
                 "age_group_end": response.age_group_end,
-                "game_start_date": response.game_start_date,
+                "hosting_data": response.hosting_data,
             })
         return hosting_list
     else:

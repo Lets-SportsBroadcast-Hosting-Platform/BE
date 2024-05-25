@@ -1,12 +1,37 @@
 from datetime import datetime
-
+from database import _s3, settings
+from typing import List
+from PIL import Image
+import io
 from database.search_query import query_response, update_response
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from models.hosting_table import HostingModel
+from models.store_table import StoreModel
 from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.hosting.models.hosting_models import HostinginsertModel
-from routes.host.api_helper import host_update_image  
+ 
+
+# s3 사업자 번호를 기준으로 폴더를 만들고 이미지를 청크화해서 업로드하는 함수
+async def s3_upload(folder: str, photos: List[UploadFile]):
+    if _s3.create_folder(_s3.bucket_name, folder):
+        for file_no in range(len(photos)):
+            image_data = await photos[file_no].read()
+            image = Image.open(io.BytesIO(image_data))
+            print(image.mode)
+            if image.mode in ("RGBA", "RGBX", "LA", "P", "PA"):
+                rgb_image = image.convert("RGB")
+            output = io.BytesIO()
+            rgb_image.save(output, format="JPEG", quality=80, optimize=True)
+            _s3.upload_file_in_chunks(
+                photo=output,
+                bucket_name=_s3.bucket_name,
+                object_name=f"{folder}/{file_no}",
+            )
+        return True
+    else:
+        return False
+
 # Hosting 테이블에 insert 하는 함수 CQRS : Create
 async def insert_hosting_table(hostingModel: HostinginsertModel, db: AsyncSession) -> bool:
     try:
@@ -41,14 +66,15 @@ async def read_hosting_tables(hosting_name: str, db: AsyncSession) -> HostingMod
         for response in responses:
             #response = response[0]
             hosting_list.append({
+                "hosting_id" : response.hosting_id,
                 "hosting_name": response.hosting_name,
                 "business_no": response.business_no,
                 "introduce": response.introduce,
-                "cur_personnel": response.cur_personnel,
+                "current_personnel": response.current_personnel,
                 "max_personnel": response.max_personnel,
                 "age_group_start": response.age_group_start,
                 "age_group_end": response.age_group_end,
-                "game_start_date": response.game_start_date,
+                "hosting_data": response.hosting_data,
             })
         return hosting_list
     else:
@@ -65,14 +91,15 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
     if response:
         response = response[0]
         hosting_list={
+            "hosting_id" : response.hosting_id,
             "hosting_name": response.hosting_name,
             "business_no": response.business_no,
             "introduce": response.introduce,
-            "cur_personnel": response.cur_personnel,
+            "current_personnel": response.current_personnel,
             "max_personnel": response.max_personnel,
             "age_group_start": response.age_group_start,
             "age_group_end": response.age_group_end,
-            "game_start_date": response.game_start_date,
+            "hosting_data": response.hosting_data,
         }
         return hosting_list
     else:
@@ -93,3 +120,12 @@ async def update_hosting_table(hosting_id: int, db: AsyncSession):
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
     await update_response(_query,db)
+
+async def update_storeimage(business_no: int, image_count: int, screen_size: int):
+    value = {
+        StoreModel.store_image_count : image_count,
+        StoreModel.store_image_url : f"https://s3.ap-northeast-2.amazonaws.com/letsapp.store/{business_no}/",
+        StoreModel.screen_size: screen_size
+    }
+    _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
+    await update_response(_query,StoreModel)
