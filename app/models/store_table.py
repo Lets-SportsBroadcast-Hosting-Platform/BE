@@ -1,26 +1,29 @@
 import re
 from typing import List, Optional
-
+from datetime import datetime
 from database import settings
 from models import Base
 from pydantic import BaseModel
+from sqlalchemy import func, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
 
 # store 테이블
 class StoreModel(Base):
-    __tablename__ = "Store"
-
+    __tablename__ = "stores"
+ 
     business_no: Mapped[int] = mapped_column(primary_key=True, nullable=False)
-    token: Mapped[str] = mapped_column(nullable=False)
+    id : Mapped[str] = mapped_column(nullable=False)
     store_name: Mapped[str] = mapped_column(nullable=False)
     store_address: Mapped[str] = mapped_column(nullable=False)
-    store_address_road: Mapped[str] = mapped_column(nullable=False)
+    store_road_address: Mapped[str] = mapped_column(nullable=False)
     store_category: Mapped[str] = mapped_column(nullable=False)
-    store_contact_number: Mapped[str] = mapped_column(nullable=True)
-    image_url: Mapped[str] = mapped_column(nullable=False)
-    image_count: Mapped[int] = mapped_column(nullable=False)
+    store_number: Mapped[str] = mapped_column(nullable=True)
+    store_image_url: Mapped[str] = mapped_column(nullable=False)
+    store_image_count: Mapped[int] = mapped_column(nullable=False)
     screen_size: Mapped[int] = mapped_column(nullable=False)
+    create_time: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
+    update_time: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
     delete_state: Mapped[bool] = mapped_column(nullable=False, default=False)
 
 
