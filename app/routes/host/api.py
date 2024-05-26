@@ -1,9 +1,9 @@
 import json
-from typing import Annotated, List
+from typing import Annotated
 
 import httpx
 from database import get_db
-from fastapi import Depends, File, Form, Header, HTTPException, UploadFile
+from fastapi import Depends, Form, Header, HTTPException
 from models.store_table import Auth_Business_Registration_Number
 from routes.host.api_helper import (
     check_bno,
@@ -11,12 +11,13 @@ from routes.host.api_helper import (
     kakao_searchlist,
     make_store_data,
     naver_searchlist,
-    s3_upload,
     user_read_store,
     host_update_store,
     host_delete_store,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
+from .models.store_models import StoreinsertModel, StoreUpdateModel
 
 common_header = {"Accept": "application/json", "Content-Type": "application/json"}
 
@@ -25,7 +26,6 @@ common_header = {"Accept": "application/json", "Content-Type": "application/json
 async def auth_business_num(
     bno: Annotated[str | None, Header(convert_underscores=False)] = None
 ) -> dict:
-    print(bno)
     business_num = Auth_Business_Registration_Number(b_no=bno)
     print(business_num.b_no)
     url = "http://api.odcloud.kr/api/nts-businessman/v1/status?"
@@ -62,15 +62,12 @@ async def searchlist(keyword: str, provider: str):
 
 # s3에 이미지를 올리고 db에 데이터를 커밋하는 api 함수
 async def insert_store(
-    data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)
+    storeinsertmodel: StoreinsertModel, db: AsyncSession = Depends(get_db)
 ):
-    store_table = make_store_data(json.loads(data), len(photos))
+    store_table = make_store_data(storeinsertmodel)
+    #store_table = make_store_data(json.loads(data), len(photos))
     print(store_table)
     if not await check_bno(store_table.business_no, db):
-        _check_s3_upload = await s3_upload(str(store_table.business_no), photos)
-    else:
-        raise HTTPException(status_code=200, detail=400)
-    if _check_s3_upload:
         db.add(store_table)
         await db.commit()
         return "Upload Success"
@@ -92,14 +89,22 @@ async def read_store(
     return result
 
 async def update_store(
-    screen: int,
-    business_no: int,
+    storeupdatemodel: StoreUpdateModel,
+    business_no: Annotated[str | None, Header(convert_underscores=False)] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    await host_update_store(screen, business_no, db)
+    try:
+        await host_update_store(storeupdatemodel, business_no, db)
+        return "Update Success"
+    except:
+        raise HTTPException(status_code=200, detail=400) 
 
 async def delete_store(
-    business_no: int,
+    business_no: Annotated[str | None, Header(convert_underscores=False)] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    await host_delete_store(business_no, db)
+    try:
+        await host_delete_store(business_no, db)
+        return "Delete Success"
+    except:
+        raise HTTPException(status_code=200, detail=400)

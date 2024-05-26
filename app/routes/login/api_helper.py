@@ -83,11 +83,11 @@ def make_user_data(response: dict, provider: str, region: str, alarm: bool) -> (
     user_uuid = uuid.uuid5(namespace=uuid.NAMESPACE_OID, name=response.get("email"))
 
     user_data = UserModel(
-        user_id=str(user_uuid),
+        id=str(user_uuid),
         name=response.get("name"),
         gender=user_gender,
         birthyear=response.get("birthyear"),
-        region=region,
+        area=region,
         alarm=alarm,
     )
     auth_data = AuthModel(token=str(base64.b64encode(user_uuid.bytes))[2:-1], provider=provider)
@@ -103,7 +103,7 @@ async def user_auth_db(
     db_check, after_check_db = await user_db_check(user_table, db)
     if db_check:
         print("유저 있음", flush=True)
-        jwt_token_or_error = await token_verify_db(user_table.user_id, auth_table.provider, db)
+        jwt_token_or_error = await token_verify_db(user_table.id, auth_table.provider, db)
         if type(jwt_token_or_error) == str:  # Jwt_token일떄
             return jwt_token_or_error, after_check_db
         else:  # ValueError일때
@@ -121,7 +121,7 @@ async def user_auth_db(
 # user table에 가입되어 있는지 확인
 async def user_db_check(data: UserModel, db: AsyncSession) -> (bool, UserModel | None):  # type: ignore
 
-    _query = select(UserModel).where(UserModel.name == data.name, UserModel.user_id == data.user_id)
+    _query = select(UserModel).where(UserModel.name == data.name, UserModel.id == data.id)
     existing_id = (await query_response_one(_query, db)).one_or_none()
     return True if existing_id else False, existing_id
 
