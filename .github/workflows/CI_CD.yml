@@ -2,27 +2,26 @@ name: Deploy with Docker
 
 on:
   push:
-    # 브랜치로 개발하며 완료되면 main 에 머지해 Actions 를 작동
     branches: [ main ]
+
 env:
-  # Docker image 를 ghcr.io 에 올릴 때 우리의github이름/이미지이름 으로 저장한다. 이미지이름을 정해주면 된다.
   DOCKER_IMAGE: ghcr.io/${{ github.actor }}/lets_server_image
   VERSION: ${{ github.sha }}
-  NAME: lets_server # 컨테이너 이름
-  SERVER_SECRET_KEY: ${{secrets.SERVER_SECRET_KEY}}
-  KAKAO_CLIENT_ID: ${{secrets.KAKAO_CLIENT_ID}}
-  KAKAO_RESTAPI_KEY: ${{secrets.KAKAO_RESTAPI_KEY}}
-  NAVER_CLIENT_ID: ${{secrets.NAVER_CLIENT_ID}}
-  NAVER_SECRET_KEY: ${{secrets.NAVER_SECRET_KEY}}
-  DATABASE_HOST: ${{secrets.DATABASE_HOST}}
-  DATABASE_USER: ${{secrets.DATABASE_USER}}
-  DATABASE_PWD: ${{secrets.DATABASE_PWD}}
-  DATABASE_NAME: ${{secrets.DATABASE_NAME}}
-  BUSSINESS_SERVICE_KEY: ${{secrets.BUSSINESS_SERVICE_KEY}}
-  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-  REGION_NAME: ${{secrets.REGION_NAME}}
-  BUCKET_NAME: ${{secrets.BUCKET_NAME}}
+  NAME: lets_server
+  SERVER_SECRET_KEY: ${{ secrets.SERVER_SECRET_KEY }}
+  KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+  KAKAO_RESTAPI_KEY: ${{ secrets.KAKAO_RESTAPI_KEY }}
+  NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+  NAVER_SECRET_KEY: ${{ secrets.NAVER_SECRET_KEY }}
+  DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+  DATABASE_USER: ${{ secrets.DATABASE_USER }}
+  DATABASE_PWD: ${{ secrets.DATABASE_PWD }}
+  DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+  BUSSINESS_SERVICE_KEY: ${{ secrets.BUSSINESS_SERVICE_KEY }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  REGION_NAME: ${{ secrets.REGION_NAME }}
+  BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
 
 jobs:
   build:
@@ -32,11 +31,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      
+
       - name: Setup docker buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
-        
+
       - name: Cache docker layers
         uses: actions/cache@v2
         with:
@@ -44,13 +43,13 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ env.VERSION }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+
       - name: Login to ghcr
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-          # ghcr.io 에 접근
 
       - name: Build and push
         id: docker_build
@@ -59,12 +58,12 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: ${{ env.DOCKER_IMAGE }}:latest
-  
+
   deploy:
     needs: build
     name: Deploy
     runs-on: [ self-hosted, label-lets ]
-    # label-newproject 라는 이름으로 AWS EC2 가 Runner 를 작동시킬 때 사용했던 그 label
+
     steps:
       - name: Login to ghcr
         uses: docker/login-action@v1
@@ -75,20 +74,22 @@ jobs:
       
       - name: Docker run
         run: |
-          docker stop ${{ env.NAME }} && docker rm ${{ env.NAME }} && docker rmi ${{ env.DOCKER_IMAGE }}:latest
-          docker run -dit -p 80:80 --name lets_server \
-          --env ${{ env.SERVER_SECRET_KEY }} \
-          --env ${{ env.KAKAO_CLIENT_ID }} \
-          --env ${{ env.KAKAO_RESTAPI_KEY }} \
-          --env ${{ env.NAVER_CLIENT_ID }} \
-          --env ${{ env.NAVER_SECRET_KEY }} \
-          --env ${{ env.DATABASE_HOST }} \
-          --env ${{ env.DATABASE_USER }} \
-          --env ${{ env.DATABASE_PWD }} \
-          --env ${{ env.DATABASE_NAME }} \
-          --env ${{ env.BUSSINESS_SERVICE_KEY }} \
-          --env ${{ env.AWS_ACCESS_KEY_ID }} \
-          --env ${{ env.AWS_SECRET_ACCESS_KEY }} \
-          --env ${{ env.REGION_NAME }} \
-          --env ${{ env.BUCKET_NAME }} \
+          docker stop ${{ env.NAME }} || true
+          docker rm ${{ env.NAME }} || true
+          docker rmi ${{ env.DOCKER_IMAGE }}:latest || true
+          docker run -dit -p 80:80 --name ${{ env.NAME }} \
+          --env SERVER_SECRET_KEY=${{ secrets.SERVER_SECRET_KEY }} \
+          --env KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
+          --env KAKAO_RESTAPI_KEY=${{ secrets.KAKAO_RESTAPI_KEY }} \
+          --env NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
+          --env NAVER_SECRET_KEY=${{ secrets.NAVER_SECRET_KEY }} \
+          --env DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
+          --env DATABASE_USER=${{ secrets.DATABASE_USER }} \
+          --env DATABASE_PWD=${{ secrets.DATABASE_PWD }} \
+          --env DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
+          --env BUSSINESS_SERVICE_KEY=${{ secrets.BUSSINESS_SERVICE_KEY }} \
+          --env AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+          --env AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+          --env REGION_NAME=${{ secrets.REGION_NAME }} \
+          --env BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
           --restart always ${{ env.DOCKER_IMAGE }}:latest
