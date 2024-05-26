@@ -12,7 +12,11 @@ ARG SERVER_SECRET_KEY \
     DATABASE_USER \
     DATABASE_PWD \
     DATABASE_NAME \
-    BUSSINESS_SERVICE_KEY
+    BUSSINESS_SERVICE_KEY \
+    AWS_ACCESS_KEY_ID  \
+    AWS_SECRET_ACCESS_KEY \
+    REGION_NAME \
+    BUCKET_NAME
 
 WORKDIR /code
 
@@ -28,7 +32,11 @@ RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" > /code/app/.env && \
     echo "DATABASE_USER=${DATABASE_USER}" >> /code/app/.env && \
     echo "DATABASE_PWD=${DATABASE_PWD}" >> /code/app/.env && \
     echo "DATABASE_NAME=${DATABASE_NAME}" >> /code/app/.env && \
-    echo "BUSSINESS_SERVICE_KEY=${BUSSINESS_SERVICE_KEY}" >> /code/app/.env
+    echo "BUSSINESS_SERVICE_KEY=${BUSSINESS_SERVICE_KEY}" >> /code/app/.env && \
+    echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> /code/app/.env && \
+    echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> /code/app/.env && \
+    echo "BUCKET_NAME=${BUCKET_NAME}" >> /code/app/.env && \
+    echo "REGION_NAME=${REGION_NAME}" >> /code/app/.env
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
