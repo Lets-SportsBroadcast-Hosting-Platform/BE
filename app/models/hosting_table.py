@@ -16,8 +16,8 @@ class HostingModel(Base):
     introduce: Mapped[str] = mapped_column(nullable=False)
     current_personnel: Mapped[int] = mapped_column(nullable=False, default=0)
     max_personnel: Mapped[int] = mapped_column(nullable=False)
-    age_group_start: Mapped[int] = mapped_column(nullable=False, default=0)
-    age_group_end: Mapped[int] = mapped_column(nullable=False)
+    age_group_min: Mapped[int] = mapped_column(nullable=False, default=0)
+    age_group_max: Mapped[int] = mapped_column(nullable=False)
     hosting_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     create_time: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
     update_time: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
@@ -32,8 +32,8 @@ class HostingData(BaseModel):
     introduce: str = None
     current_personnel: int = None
     max_personnel: int = None
-    age_group_start: int = None
-    age_group_end: int = None
+    age_group_min: int = None
+    age_group_max: int = None
     hosting_date: datetime = None
     #screen_size: int #store테이블에 넣어야하는 데이터
 
@@ -44,8 +44,8 @@ class HostingData(BaseModel):
             introduce=self.introduce,
             current_personnel=self.current_personnel,
             max_personnel=self.max_personnel,
-            age_group_start=self.age_group_start,
-            age_group_end=self.age_group_end,
+            age_group_min=self.age_group_min,
+            age_group_max=self.age_group_max,
             hosting_date=self.hosting_date
             #screen_size=self.screen_size
         )

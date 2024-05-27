@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from datetime import datetime
 
 class HostinginsertModel(BaseModel):
@@ -7,7 +8,7 @@ class HostinginsertModel(BaseModel):
     introduce: str = None
     current_personnel: int = None
     max_personnel: int = None
-    age_group_start: int = None
-    age_group_end: int = None
+    age_group_min: int = None
+    age_group_max: int = None
     hosting_date: datetime = None
     screen_size: int = None
