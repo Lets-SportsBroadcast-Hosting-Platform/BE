@@ -8,7 +8,11 @@ from routes.host import (
     store_update_route,
     store_delete_route,
 )
-from routes.hosting import hosting_create_route, hosting_read_tables_route, hosting_read_table_route
+from routes.hosting import (
+    hosting_create_route, 
+    hosting_read_tables_route, 
+    hosting_read_table_route,
+    store_input_image)
 from routes.login import login_route, login_token_route
 from routes.mainpage import mainpage_hosting_read_route
 login_routers = APIRouter(tags=["Login"])
@@ -29,6 +33,7 @@ login_routers.routes.append(login_token_route)
 hosting_routers.routes.append(hosting_create_route)
 hosting_routers.routes.append(hosting_read_tables_route)
 hosting_routers.routes.append(hosting_read_table_route)
+hosting_routers.routes.append(store_input_image)
 
 mainpage_routers.routes.append(mainpage_hosting_read_route)
 
