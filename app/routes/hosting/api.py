@@ -31,7 +31,7 @@ async def make_hosting(hostinginsertmodel: HostinginsertModel, db: AsyncSession 
 #image, screen_size을 store테이블에 넣는 기능을 다른 api로 구현
 async def update_image_store(business_no: int, screen_size:int, photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)):
     if await check_bno(business_no, db):
-        await update_storeimage(business_no, screen_size, len(photos), db)
+        await update_storeimage(business_no, len(photos), screen_size, db)
         return "이미지 스크린 사이즈 저장"
     else:
         raise HTTPException(status_code=200, detail=400)
@@ -55,14 +55,14 @@ async def read_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
 async def update_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
     result = await update_hosting_table(hosting_id, db)
     if result:
-        return result
+        return "수정되었습니다."
     else:
         raise HTTPException(status_code=200, detail=400)
     
 async def delete_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
     result = await delete_hosting_table(hosting_id, db)
     if result:
-        return result
+        return "삭제되었습니다."
     else:
         raise HTTPException(status_code=200, detail=400)
     

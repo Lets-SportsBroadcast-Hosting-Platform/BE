@@ -100,18 +100,27 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
     response = (await query_response(_query, db))
     if response:
         response = response[0]
-        hosting_list={
-            "hosting_id" : response.hosting_id,
-            "hosting_name": response.hosting_name,
-            "business_no": response.business_no,
-            "introduce": response.introduce,
-            "current_personnel": response.current_personnel,
-            "max_personnel": response.max_personnel,
-            "age_group_min": response.age_group_min,
-            "age_group_max": response.age_group_max,
-            "hosting_date": response.hosting_date,
-        }
-        return hosting_list
+        _query_store = select(StoreModel).where(
+            StoreModel.business_no == response.business_no
+        )
+        response_store = (await query_response(_query_store, db))
+        if response_store:
+            response_store = response_store[0]
+            hosting_list={
+                "hosting_id" : response.hosting_id,
+                "hosting_name": response.hosting_name,
+                "business_no": response.business_no,
+                "introduce": response.introduce,
+                "current_personnel": response.current_personnel,
+                "max_personnel": response.max_personnel,
+                "age_group_min": response.age_group_min,
+                "age_group_max": response.age_group_max,
+                "hosting_date": response.hosting_date,
+                "store_image_url" : response_store.store_image_url,
+                "store_image_count" : response_store.store_image_count,
+                "screen_size" : response_store.screen_size
+            }
+            return hosting_list
     else:
         raise HTTPException(status_code=200, detail=400)
     
@@ -121,7 +130,7 @@ async def delete_hosting_table(hosting_id: int, db: AsyncSession):
         HostingModel.delete_state : True
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
-    await update_response(_query,db)
+    return await update_response(_query,db)
 
 async def update_hosting_table(hosting_id: int, db: AsyncSession):
     value = {
@@ -129,7 +138,7 @@ async def update_hosting_table(hosting_id: int, db: AsyncSession):
         HostingModel.delete_state : True
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
-    await update_response(_query,db)
+    return await update_response(_query,db)
 
 async def update_storeimage(business_no: int, image_count: int, screen_size: int, db: AsyncSession):
     value = {
@@ -138,4 +147,4 @@ async def update_storeimage(business_no: int, image_count: int, screen_size: int
         StoreModel.screen_size: screen_size
     }
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
-    await update_response(_query,db)
+    return await update_response(_query,db)

@@ -26,11 +26,19 @@ async def query_response(query: select, db: AsyncSession) -> ScalarResult:
         return all_results
 
 async def update_response(query: update, db: AsyncSession):
-    async with db as session:
-        await session.execute(query)
-        await session.commit()
+    try:
+        async with db as session:
+            await session.execute(query)
+            await session.commit()
+        return True
+    except:
+        return False
     
 async def delete_response(query: delete, db: AsyncSession):
-    async with db as session:
-        await session.execute(query)
-        await session.commit()
+    try:
+        async with db as session:
+            await session.execute(query)
+            await session.commit()
+        return True
+    except:
+        return False
