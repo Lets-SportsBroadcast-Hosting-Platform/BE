@@ -13,3 +13,4 @@ class StoreinsertModel(BaseModel):
     store_road_address: str
     store_category: str
     store_number: str
+    alarm: bool

@@ -1,5 +1,5 @@
 from fastapi.routing import APIRoute
-from routes.hosting.api import make_hosting, read_hosting, read_hostings,update_image_store, delete_hosting
+from routes.hosting.api import make_hosting, read_hosting, read_hostings, delete_hosting
 
 # 호스팅 등록 (Create)
 hosting_create_route = APIRoute(path="/make_hosting", endpoint=make_hosting, methods=["POST"])
@@ -14,4 +14,4 @@ hosting_read_table_route = APIRoute(path="/read_hosting", endpoint=read_hosting,
 hosting_delete_table_route = APIRoute(path = "/delete_hosting", endpoint=delete_hosting, methods=["DELETE"])
 
 #이미지, 스크린 사이즈 삽입
-store_input_image = APIRoute(path='/insert_images', endpoint=update_image_store, methods=['POST'])
+#store_input_image = APIRoute(path='/insert_images', endpoint=update_image_store, methods=['POST'])

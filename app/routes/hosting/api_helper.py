@@ -50,11 +50,12 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
 
 
 # Hosting 테이블에서 사업자번호로 Read 하는 함수 CQRS : Read
-async def read_hosting_tables(hosting_name: str, db: AsyncSession) -> HostingModel:
+async def read_hosting_tables(hosting_name: str, status: bool, db: AsyncSession) -> HostingModel:
+    diff_status = not status
     _query = select(HostingModel).where(
         HostingModel.business_no == hosting_name,
-        HostingModel.active_state == True,
-        HostingModel.delete_state == False,
+        HostingModel.active_state == status,
+        HostingModel.delete_state == diff_status,
     )
     responses = (await query_response(_query, db))
     if responses:
@@ -77,16 +78,18 @@ async def read_hosting_tables(hosting_name: str, db: AsyncSession) -> HostingMod
     else:
         raise HTTPException(status_code=200, detail=400)
     
-def make_hosting_data(data: HostinginsertModel):
+def make_hosting_data(data: dict):
+    print(data)
     hosting_data = HostingModel(
-        hosting_name=data.hosting_name,
-        business_no=data.business_no,
-        introduce=data.introduce,
-        current_personnel=data.current_personnel,
-        max_personnel=data.max_personnel,
-        age_group_min=data.age_group_min,
-        age_group_max=data.age_group_max,
-        hosting_date=data.hosting_date,
+        hosting_name=data.get('hosting_name'),
+        business_no=data.get('business_no'),
+        introduce=data.get('introduce'),
+        current_personnel=data.get('current_personnel'),
+        max_personnel=data.get('max_personnel'),
+        age_group_min=data.get('age_group_min'),
+        age_group_max=data.get('age_group_max'),
+        hosting_date=data.get('hosting_date'),
+        create_time = datetime.now()
     )
     return hosting_data
 
@@ -123,7 +126,6 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
             return hosting_list
     else:
         raise HTTPException(status_code=200, detail=400)
-    
 async def delete_hosting_table(hosting_id: int, db: AsyncSession):
     value = {
         HostingModel.active_state : False,
