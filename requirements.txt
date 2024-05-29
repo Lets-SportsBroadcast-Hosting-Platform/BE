@@ -33,6 +33,7 @@ jmespath==1.0.1
 MarkupSafe==2.1.5
 multidict==6.0.5
 orjson==3.10.1
+mangum==0.17.0
 pillow==10.3.0
 pyasn1==0.6.0
 pycparser==2.22
