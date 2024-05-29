@@ -7,8 +7,8 @@ settings = Settings()
 DB_URL = f"mysql+aiomysql://{settings.DATABASE_USER}:{settings.DATABASE_PWD}@{settings.DATABASE_HOST}:{3306}/{settings.DATABASE_NAME}"
 _engine = conn_db(DB_URL)
 _s3 = conn_S3(
-    settings.AWS_ACCESS_KEY_ID,
-    settings.AWS_SECRET_ACCESS_KEY,
+    settings.AWS_ACCESS_KEY_ID_,
+    settings.AWS_SECRET_ACCESS_KEY_,
     settings.REGION_NAME,
     settings.BUCKET_NAME,
 )
