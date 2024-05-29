@@ -79,7 +79,7 @@ async def insert_store(
 
 # db에있는 가게 조회
 async def read_store(
-    business_no: Annotated[str | None, Header(convert_underscores=False)] = None,
+    business_no: int,
     store_name: str = None,
     db: AsyncSession = Depends(get_db),
 ):
@@ -89,10 +89,10 @@ async def read_store(
         result = await user_read_store(store_name, db)
     #result = await host_read_store(business_no, db)
     return result
-
+#business_no: Annotated[str | None, Header(convert_underscores=False)] = None,
 async def update_store(
+    business_no: int,
     storeupdatemodel: StoreUpdateModel,
-    business_no: Annotated[str | None, Header(convert_underscores=False)] = None,
     db: AsyncSession = Depends(get_db),
 ):
     try:
@@ -102,7 +102,7 @@ async def update_store(
         raise HTTPException(status_code=200, detail=400) 
 
 async def delete_store(
-    business_no: Annotated[str | None, Header(convert_underscores=False)] = None,
+    business_no: int,
     db: AsyncSession = Depends(get_db),
 ):
     try:

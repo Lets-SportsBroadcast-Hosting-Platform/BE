@@ -78,19 +78,27 @@ async def read_hosting_tables(hosting_name: str, status: bool, db: AsyncSession)
     else:
         raise HTTPException(status_code=200, detail=400)
     
-def make_hosting_data(data: dict):
+def make_hosting_data(data: dict, update: bool):
     print(data)
-    hosting_data = HostingModel(
-        hosting_name=data.get('hosting_name'),
-        business_no=data.get('business_no'),
-        introduce=data.get('introduce'),
-        current_personnel=data.get('current_personnel'),
-        max_personnel=data.get('max_personnel'),
-        age_group_min=data.get('age_group_min'),
-        age_group_max=data.get('age_group_max'),
-        hosting_date=data.get('hosting_date'),
-        create_time = datetime.now()
-    )
+    if not update:
+        hosting_data = HostingModel(
+            hosting_name=data.get('hosting_name'),
+            business_no=data.get('business_no'),
+            introduce=data.get('introduce'),
+            max_personnel=data.get('max_personnel'),
+            age_group_min=data.get('age_group_min'),
+            age_group_max=data.get('age_group_max'),
+            hosting_date=data.get('hosting_date'),
+            create_time = datetime.now()
+        )
+    else:
+        hosting_data = HostingModel(
+            hosting_name=data.get('hosting_name'),
+            introduce=data.get('introduce'),
+            max_personnel=data.get('max_personnel'),
+            age_group_min=data.get('age_group_min'),
+            age_group_max=data.get('age_group_max')
+        )
     return hosting_data
 
 # Hosting 테이블에서 hosting_id로 Read 하는 함수 CQRS : Read
@@ -101,8 +109,10 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
         HostingModel.delete_state == False,
     )
     response = (await query_response(_query, db))
+    print(response)
     if response:
         response = response[0]
+        print(response.business_no)
         _query_store = select(StoreModel).where(
             StoreModel.business_no == response.business_no
         )
@@ -134,14 +144,17 @@ async def delete_hosting_table(hosting_id: int, db: AsyncSession):
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
     return await update_response(_query,db)
 
-async def update_hosting_table(hosting_id: int, db: AsyncSession):
+
+async def update_hosting_table(hosting_id: int, hostingdata: HostingModel, db: AsyncSession):
     value = {
-        HostingModel.active_state : False,
-        HostingModel.delete_state : True
+        HostingModel.hosting_name : hostingdata.hosting_name,
+        HostingModel.introduce : hostingdata.introduce,
+        HostingModel.max_personnel : hostingdata.max_personnel,
+        HostingModel.age_group_min : hostingdata.age_group_min,
+        HostingModel.age_group_max : hostingdata.age_group_max
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
     return await update_response(_query,db)
-
 async def update_storeimage(business_no: int, image_count: int, screen_size: int, db: AsyncSession):
     value = {
         StoreModel.store_image_count : image_count,
