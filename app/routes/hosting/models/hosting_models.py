@@ -11,4 +11,3 @@ class HostinginsertModel(BaseModel):
     age_group_min: int = None
     age_group_max: int = None
     hosting_date: datetime = None
-    screen_size: int = None

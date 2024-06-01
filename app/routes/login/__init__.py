@@ -5,7 +5,7 @@ from routes.login.api import login_as_token, sso
 
 # 소셜 로그인 (Create) #헤더 사용
 login_route = APIRoute(
-    path="/", endpoint=sso, methods=["POST"], response_model=login_result_server2client
+    path="", endpoint=sso, methods=["POST"], response_model=login_result_server2client
 )
 
 # 토큰으로 로그인 (Read) # 헤더 사용

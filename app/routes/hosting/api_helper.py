@@ -50,11 +50,12 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
 
 
 # Hosting 테이블에서 사업자번호로 Read 하는 함수 CQRS : Read
-async def read_hosting_tables(hosting_name: str, db: AsyncSession) -> HostingModel:
+async def read_hosting_tables(hosting_name: str, status: bool, db: AsyncSession) -> HostingModel:
+    diff_status = not status
     _query = select(HostingModel).where(
         HostingModel.business_no == hosting_name,
-        HostingModel.active_state == True,
-        HostingModel.delete_state == False,
+        HostingModel.active_state == status,
+        HostingModel.delete_state == diff_status,
     )
     responses = (await query_response(_query, db))
     if responses:
@@ -77,17 +78,27 @@ async def read_hosting_tables(hosting_name: str, db: AsyncSession) -> HostingMod
     else:
         raise HTTPException(status_code=200, detail=400)
     
-def make_hosting_data(data: HostinginsertModel):
-    hosting_data = HostingModel(
-        hosting_name=data.hosting_name,
-        business_no=data.business_no,
-        introduce=data.introduce,
-        current_personnel=data.current_personnel,
-        max_personnel=data.max_personnel,
-        age_group_min=data.age_group_min,
-        age_group_max=data.age_group_max,
-        hosting_date=data.hosting_date,
-    )
+def make_hosting_data(data: dict, update: bool):
+    print(data)
+    if not update:
+        hosting_data = HostingModel(
+            hosting_name=data.get('hosting_name'),
+            business_no=data.get('business_no'),
+            introduce=data.get('introduce'),
+            max_personnel=data.get('max_personnel'),
+            age_group_min=data.get('age_group_min'),
+            age_group_max=data.get('age_group_max'),
+            hosting_date=data.get('hosting_date'),
+            create_time = datetime.now()
+        )
+    else:
+        hosting_data = HostingModel(
+            hosting_name=data.get('hosting_name'),
+            introduce=data.get('introduce'),
+            max_personnel=data.get('max_personnel'),
+            age_group_min=data.get('age_group_min'),
+            age_group_max=data.get('age_group_max')
+        )
     return hosting_data
 
 # Hosting 테이블에서 hosting_id로 Read 하는 함수 CQRS : Read
@@ -98,39 +109,52 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
         HostingModel.delete_state == False,
     )
     response = (await query_response(_query, db))
+    print(response)
     if response:
         response = response[0]
-        hosting_list={
-            "hosting_id" : response.hosting_id,
-            "hosting_name": response.hosting_name,
-            "business_no": response.business_no,
-            "introduce": response.introduce,
-            "current_personnel": response.current_personnel,
-            "max_personnel": response.max_personnel,
-            "age_group_min": response.age_group_min,
-            "age_group_max": response.age_group_max,
-            "hosting_date": response.hosting_date,
-        }
-        return hosting_list
+        print(response.business_no)
+        _query_store = select(StoreModel).where(
+            StoreModel.business_no == response.business_no
+        )
+        response_store = (await query_response(_query_store, db))
+        if response_store:
+            response_store = response_store[0]
+            hosting_list={
+                "hosting_id" : response.hosting_id,
+                "hosting_name": response.hosting_name,
+                "business_no": response.business_no,
+                "introduce": response.introduce,
+                "current_personnel": response.current_personnel,
+                "max_personnel": response.max_personnel,
+                "age_group_min": response.age_group_min,
+                "age_group_max": response.age_group_max,
+                "hosting_date": response.hosting_date,
+                "store_image_url" : response_store.store_image_url,
+                "store_image_count" : response_store.store_image_count,
+                "screen_size" : response_store.screen_size
+            }
+            return hosting_list
     else:
         raise HTTPException(status_code=200, detail=400)
-    
 async def delete_hosting_table(hosting_id: int, db: AsyncSession):
     value = {
         HostingModel.active_state : False,
         HostingModel.delete_state : True
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
-    await update_response(_query,db)
+    return await update_response(_query,db)
 
-async def update_hosting_table(hosting_id: int, db: AsyncSession):
+
+async def update_hosting_table(hosting_id: int, hostingdata: HostingModel, db: AsyncSession):
     value = {
-        HostingModel.active_state : False,
-        HostingModel.delete_state : True
+        HostingModel.hosting_name : hostingdata.hosting_name,
+        HostingModel.introduce : hostingdata.introduce,
+        HostingModel.max_personnel : hostingdata.max_personnel,
+        HostingModel.age_group_min : hostingdata.age_group_min,
+        HostingModel.age_group_max : hostingdata.age_group_max
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
-    await update_response(_query,db)
-
+    return await update_response(_query,db)
 async def update_storeimage(business_no: int, image_count: int, screen_size: int, db: AsyncSession):
     value = {
         StoreModel.store_image_count : image_count,
@@ -138,4 +162,4 @@ async def update_storeimage(business_no: int, image_count: int, screen_size: int
         StoreModel.screen_size: screen_size
     }
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
-    await update_response(_query,db)
+    return await update_response(_query,db)

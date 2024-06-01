@@ -7,6 +7,7 @@ from database import _s3, settings
 from database.search_query import query_response, update_response, delete_response
 from fastapi import HTTPException, Response, UploadFile
 from models.store_table import StoreModel, storeData
+from models.user_table import UserModel
 from PIL import Image
 from sqlalchemy import *
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,6 +53,7 @@ async def check_bno(b_no: int, db: AsyncSession):
 
 # 클라이언트에서 받은 데이터를 StoreModel화하는 함수
 def make_store_data(data: StoreinsertModel) -> StoreModel:
+    print('make_store')
     store_data = StoreModel(
         business_no=data.business_no,
         id=data.id,
@@ -138,3 +140,14 @@ async def host_delete_store(business_no: int, db: AsyncSession):
     }
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
     await update_response(_query,db)
+
+async def store_update_alarm(alarm : bool, id: str, db: AsyncSession):
+    print('update')
+    if alarm:
+        value = {
+            UserModel.alarm : alarm
+        }
+        _query = update(UserModel).where(UserModel.id == id).values(value)
+        await update_response(_query, db)
+    else:
+        pass

@@ -13,13 +13,13 @@ search_store_route = APIRoute(
 )
 
 # 가게 등록
-store_insert_route = APIRoute(path="/insertstore", endpoint=insert_store, methods=["POST"])
+store_insert_route = APIRoute(path="", endpoint=insert_store, methods=["POST"])
 
 # 가게 조회
-store_read_route = APIRoute(path="/readstore", endpoint=read_store, methods=["GET"])
+store_read_route = APIRoute(path="/{business_no}", endpoint=read_store, methods=["GET"])
 
 #가게 수정
-store_update_route = APIRoute(path="/updatestore", endpoint = update_store, methods=["PUT"])
+store_update_route = APIRoute(path="/{business_no}", endpoint = update_store, methods=["PUT"])
 
 #가게 삭제
-store_delete_route = APIRoute(path="/deletestore", endpoint=delete_store, methods=["DELETE"])
+store_delete_route = APIRoute(path="/{business_no}", endpoint=delete_store, methods=["DELETE"])
