@@ -24,8 +24,8 @@ async def read_hosting_tables(db: AsyncSession) -> HostingModel:
                 "introduce": response.introduce,
                 "current_personnel": response.current_personnel,
                 "max_personnel": response.max_personnel,
-                "age_group_start": response.age_group_start,
-                "age_group_end": response.age_group_end,
+                "age_group_min": response.age_group_min,
+                "age_group_max": response.age_group_max,
                 "hosting_date": response.hosting_date,
             })
         return hosting_list
