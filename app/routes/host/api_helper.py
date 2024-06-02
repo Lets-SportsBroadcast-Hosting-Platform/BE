@@ -151,3 +151,9 @@ async def store_update_alarm(alarm : bool, id: str, db: AsyncSession):
         await update_response(_query, db)
     else:
         pass
+async def change_user_type(id : str, db: AsyncSession):
+    value = {
+        UserModel.role : 'host'
+    }
+    _query = update(UserModel).where(UserModel.id == id).values(value)
+    await update_response(_query, db)

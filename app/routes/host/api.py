@@ -15,6 +15,7 @@ from routes.host.api_helper import (
     host_update_store,
     host_delete_store,
     store_update_alarm,
+    change_user_type,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
@@ -70,6 +71,7 @@ async def insert_store(
     #print(store_table)
     if not await check_bno(store_table.business_no, db):
         await store_update_alarm(storeinsertmodel.alarm, store_table.id, db)
+        await change_user_type(store_table.id, db)
         db.add(store_table)
         await db.commit()
         return "Upload Success"

@@ -12,6 +12,7 @@ class UserModel(Base):
     __tablename__ = "User"
 
     id: Mapped[str] = mapped_column(primary_key=True, nullable=False)  # type: ignore
+    role: Mapped[str] = mapped_column(nullable=False, default='user')
     name: Mapped[str] = mapped_column(nullable=False)
     gender: Mapped[str] = mapped_column(nullable=False)
     birthyear: Mapped[int] = mapped_column(nullable=False)

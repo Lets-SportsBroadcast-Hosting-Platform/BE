@@ -66,6 +66,7 @@ class conn_S3:
             print("폴더를 생성했습니다.")
             return True
         except ClientError as e:
+            
             return False
 
     # 이미지를 청크화 해서 업로드

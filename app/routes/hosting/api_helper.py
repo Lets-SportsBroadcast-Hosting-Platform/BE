@@ -14,6 +14,7 @@ from .models.hosting_models import HostinginsertModel
 
 # s3 사업자 번호를 기준으로 폴더를 만들고 이미지를 청크화해서 업로드하는 함수
 async def s3_upload(folder: str, photos: List[UploadFile]):
+    print(photos)
     if _s3.create_folder(_s3.bucket_name, folder):
         for file_no in range(len(photos)):
             image_data = await photos[file_no].read()
@@ -131,7 +132,8 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
                 "hosting_date": response.hosting_date,
                 "store_image_url" : response_store.store_image_url,
                 "store_image_count" : response_store.store_image_count,
-                "screen_size" : response_store.screen_size
+                "screen_size" : response_store.screen_size,
+                "store_number" : response_store.store_number
             }
             return hosting_list
     else:
@@ -155,6 +157,7 @@ async def update_hosting_table(hosting_id: int, hostingdata: HostingModel, db: A
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
     return await update_response(_query,db)
+
 async def update_storeimage(business_no: int, image_count: int, screen_size: int, db: AsyncSession):
     value = {
         StoreModel.store_image_count : image_count,
@@ -162,4 +165,5 @@ async def update_storeimage(business_no: int, image_count: int, screen_size: int
         StoreModel.screen_size: screen_size
     }
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
+    
     return await update_response(_query,db)
