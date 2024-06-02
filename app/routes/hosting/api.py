@@ -38,6 +38,7 @@ async def make_hosting(data: str = Form(...), photos: List[UploadFile] = File(..
     print(hosting_data.business_no)
     if await check_bno(hosting_data.business_no, db):
         await update_storeimage(hosting_data.business_no, len(photos), data.get('screen_size'), db)
+        await s3_upload(hosting_data.business_no, photos)
         db.add(hosting_data)
         await db.commit()
         return "호스팅 되었습니다."
@@ -54,9 +55,11 @@ async def update_hosting(hosting_id : int,
     print(hosting_data)
     #update_storeimage(hostinginsertmodel.business_no,len(photos), hostinginsertmodel.screen_size)
     #print(hostingdata.game_start_date)
+    await s3_upload(str(hosting_data.business_no), photos)
     try:
+
         await update_storeimage(hosting_data.business_no, len(photos), data['screen_size'], db)
-        await s3_upload(hosting_data.business_no, photos)
+        
         await update_hosting_table(hosting_id, hosting_data, db)
         return "호스팅이 수정되었습니다."
     except:

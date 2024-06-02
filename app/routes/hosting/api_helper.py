@@ -20,10 +20,12 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
             image_data = await photos[file_no].read()
             image = Image.open(io.BytesIO(image_data))
             print(image.mode)
+            rgb_image = image
             if image.mode in ("RGBA", "RGBX", "LA", "P", "PA"):
                 rgb_image = image.convert("RGB")
             output = io.BytesIO()
             rgb_image.save(output, format="JPEG", quality=80, optimize=True)
+            output.seek(0)
             _s3.upload_file_in_chunks(
                 photo=output,
                 bucket_name=_s3.bucket_name,
