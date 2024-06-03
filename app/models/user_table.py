@@ -64,3 +64,9 @@ class login_result_server2client(authlogin_client2server):
     def __init__(self, instance: UserModel, **kwargs):
         super().__init__(**kwargs)
         self.userInfo = userInfo_server2client(user_instance=instance).model_dump()
+
+
+class insert_userinfo(BaseModel):
+    id: str
+    area: str
+    alarm: bool

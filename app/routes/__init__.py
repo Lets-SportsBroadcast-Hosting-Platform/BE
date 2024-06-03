@@ -15,6 +15,7 @@ from routes.hosting import (
     hosting_delete_table_route,
     hosting_update_table_route,
     )
+from routes.user import user_search_local_route
 from routes.login import login_route, login_token_route
 from routes.mainpage import mainpage_hosting_read_route
 login_routers = APIRouter(tags=["Login"])
@@ -22,6 +23,7 @@ host_routers = APIRouter(tags=["Host"])
 hosting_routers = APIRouter(tags=["Hosting"])
 sports_crawl_routers = APIRouter(tags=["SportsSchedule"])
 mainpage_routers = APIRouter(tags=["Mainpage"])
+user_routers = APIRouter(tags=['User'])
 
 host_routers.routes.append(auth_bussiness_num_route)
 host_routers.routes.append(search_store_route)
@@ -43,3 +45,5 @@ mainpage_routers.routes.append(mainpage_hosting_read_route)
 
 sports_crawl_routers.routes.append(esports_schedule_route)
 sports_crawl_routers.routes.append(sports_schedule_route)
+
+user_routers.routes.append(user_search_local_route)

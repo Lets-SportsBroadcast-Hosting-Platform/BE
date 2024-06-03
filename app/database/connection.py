@@ -24,7 +24,8 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     REGION_NAME: Optional[str] = None
     BUCKET_NAME: Optional[str] = None
-
+    SGISAPI_KEY: Optional[str] = None
+    SGISAPI_SECRET: Optional[str] = None
     class Config:
         env_file = ".env"
 
