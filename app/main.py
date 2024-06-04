@@ -8,7 +8,14 @@ from fastapi.exception_handlers import (
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware import Middleware
-from routes import host_routers, hosting_routers, login_routers, sports_crawl_routers, mainpage_routers
+from routes import (
+    host_routers, 
+    hosting_routers, 
+    login_routers, 
+    sports_crawl_routers, 
+    mainpage_routers,
+    user_routers
+    )
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 middleware = [Middleware(
@@ -41,6 +48,7 @@ app.include_router(host_routers, prefix="/store")
 app.include_router(hosting_routers, prefix="/party")
 app.include_router(sports_crawl_routers, prefix="/schedule")
 app.include_router(mainpage_routers, prefix = "/mainpage")
+app.include_router(user_routers, prefix='/user')
 
 @app.get("/")
 async def index():
