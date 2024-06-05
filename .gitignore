@@ -8,7 +8,7 @@ app/routes/login/__pycache__
 app/routes/host/__pycache__
 app/routes/hosting/__pycache__
 app/routes/crawl/__pycache__
-
+app/routes/user/__pycache__
 myvenv
 # gitignore가 작동하지 않을때 대처법
 # git rm -r --cached .

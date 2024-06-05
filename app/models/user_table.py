@@ -66,7 +66,6 @@ class login_result_server2client(authlogin_client2server):
         self.userInfo = userInfo_server2client(user_instance=instance).model_dump()
 
 
-class insert_userinfo(BaseModel):
-    id: str
+class Insert_Userinfo(BaseModel):
     area: str
     alarm: bool
