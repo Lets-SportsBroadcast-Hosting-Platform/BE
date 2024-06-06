@@ -79,7 +79,7 @@ async def insert_store(
         await db.commit()
         return "Upload Success"
     else:
-        raise HTTPException(status_code=200, detail=400)
+        raise HTTPException(status_code=200, detail={'detail':400, 'message':'이미 등록된 사업자번호입니다.'}, )
 
 
 # db에있는 가게 조회

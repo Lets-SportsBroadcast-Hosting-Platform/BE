@@ -15,7 +15,14 @@ from routes.hosting import (
     hosting_delete_table_route,
     hosting_update_table_route,
     )
-from routes.user import user_search_local_route, user_insert_route
+from routes.user import (
+    user_search_local_route, 
+    user_insert_route,
+    user_apply_party_route,
+    user_read_partylist_route,
+    user_read_party_route,
+    user_delete_party_route
+    )
 from routes.login import login_route, login_token_route
 from routes.mainpage import mainpage_hosting_read_route
 login_routers = APIRouter(tags=["Login"])
@@ -48,3 +55,7 @@ sports_crawl_routers.routes.append(sports_schedule_route)
 
 user_routers.routes.append(user_search_local_route)
 user_routers.routes.append(user_insert_route)
+user_routers.routes.append(user_apply_party_route)
+user_routers.routes.append(user_read_partylist_route)
+user_routers.routes.append(user_read_party_route)
+user_routers.routes.append(user_delete_party_route)

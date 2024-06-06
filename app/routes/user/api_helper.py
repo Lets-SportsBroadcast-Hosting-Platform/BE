@@ -1,13 +1,15 @@
 import base64
 import uuid
-from database.search_query import update_response
+from datetime import datetime
+from database.search_query import update_response, query_response
 from fastapi import HTTPException
-from models.user_table import UserModel
+from models.participation_table import ParticipationModel
+from models.hosting_table import HostingModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import *
 import requests
 from database import settings
-from models.user_table import Insert_Userinfo
+from models.user_table import UserModel,Insert_Userinfo
 from auth.jwt import verify_access_token
 AUTH_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json'
 LOCAL_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/addr/stage.json'
@@ -69,3 +71,51 @@ async def insert_userinfo(id: str, user_info:Insert_Userinfo, db: AsyncSession):
         return await update_response(_query, db)
     except:
         raise HTTPException(status_code=200, detail=400)
+    
+async def making_participation(user_info: UserModel, hosting_info: HostingModel):
+    age_range = f'{hosting_info.age_group_min}-{hosting_info.age_group_max}'
+    data = ParticipationModel(
+        hosting_id = hosting_info.hosting_id,
+        id = user_info.id,
+        gender = user_info.gender,
+        area = user_info.area,
+        introduce = hosting_info.introduce,
+        age_range = age_range,
+        hosting_date = hosting_info.hosting_date,
+        create_time = datetime.now(),
+        delete_state = False
+    )
+    return data
+
+async def read_hosting_tables(hosting_id: int, status: bool, db: AsyncSession) -> HostingModel:
+    try:
+        diff_status = not status
+        _query = select(HostingModel).where(
+            HostingModel.hosting_id == hosting_id,
+            HostingModel.active_state == status,
+            HostingModel.delete_state == diff_status,
+        )
+        response = (await query_response(_query, db))
+        response = response[0]
+        hosting_list = {
+                    "hosting_id" : response.hosting_id,
+                    "hosting_name": response.hosting_name,
+                    "business_no": response.business_no,
+                    "introduce": response.introduce,
+                    "current_personnel": response.current_personnel,
+                    "max_personnel": response.max_personnel,
+                    "age_group_min": response.age_group_min,
+                    "age_group_max": response.age_group_max,
+                    "hosting_date": response.hosting_date,
+                }
+        return hosting_list
+    except:
+        raise HTTPException(status_code=200, detail=400)
+    
+async def delete_party_table(hosting_id: int, db: AsyncSession):
+    value = {
+        ParticipationModel.delete_state : True
+    }
+    _query = update(ParticipationModel).where(ParticipationModel.hosting_id == hosting_id).values(value)
+    return await update_response(_query,db)
+    
