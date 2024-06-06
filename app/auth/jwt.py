@@ -1,6 +1,7 @@
 from database import settings
 from jose import JWTError, jwt
-
+import base64
+import uuid
 
 # jwt 토큰을 생성하는 함수
 def create_jwt_access_token(token: str, provider: str) -> str:
@@ -22,3 +23,8 @@ def verify_access_token(jwt_token: str) -> str:
         return token
     except JWTError:
         raise ValueError("디코딩 이 불가합니다.")
+
+async def jwt_token2user_id(jwt):
+    token = verify_access_token(jwt)
+    user_id = uuid.UUID(bytes=base64.b64decode(token.get("auth_token")))
+    return user_id

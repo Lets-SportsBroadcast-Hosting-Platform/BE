@@ -7,7 +7,6 @@ class StoreUpdateModel(BaseModel):
 
 class StoreinsertModel(BaseModel):
     business_no: int
-    id: str
     store_name: str
     store_address: str
     store_road_address: str

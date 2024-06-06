@@ -6,7 +6,8 @@ from routes.user.api_helper import search_sgisapi
 from models.user_table import UserModel, Insert_Userinfo
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from routes.user.api_helper import jwt_token2user_id, insert_userinfo
+from routes.user.api_helper import insert_userinfo
+from auth.jwt import jwt_token2user_id
 from fastapi import Depends, Header, HTTPException, Response
 async def search_local(address:str):
     result = await search_sgisapi(address)

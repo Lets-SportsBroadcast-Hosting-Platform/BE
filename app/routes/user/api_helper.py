@@ -50,10 +50,10 @@ async def search_sgisapi(address: str):
     except:
         raise HTTPException(status_code=200, detail=400) 
     
-async def jwt_token2user_id(jwt):
+'''async def jwt_token2user_id(jwt):
     token = verify_access_token(jwt)
     user_id = uuid.UUID(bytes=base64.b64decode(token.get("auth_token")))
-    return user_id
+    return user_id'''
 
 async def insert_userinfo(id: str, user_info:Insert_Userinfo, db: AsyncSession):
     print('id', id)
