@@ -5,8 +5,8 @@ from routes.crawl.api_helper import change_date, make_url, make_url_esports, tt,
 # 축구, 야구 crawling
 async def crawling_schedule(upperCategoryId: str, categoryId: str, count: int):
 
-    first_num = (count - 1) * 10
-    last_num = (count) * 10 - 1
+    first_num = (count) * 10
+    last_num = (count+1) * 10 - 1
 
     game_schdule = {"games": []}
     # crawling url
@@ -49,8 +49,8 @@ async def crawling_schedule(upperCategoryId: str, categoryId: str, count: int):
 # esports crawling
 async def esports_crawling_schedule(esportsId: str, count: int):
 
-    first_num = (count - 1) * 10
-    last_num = (count) * 10 - 1
+    first_num = (count) * 10
+    last_num = (count+1) * 10 - 1
 
     game_schdule = {"games": []}
     # crawling esports url
