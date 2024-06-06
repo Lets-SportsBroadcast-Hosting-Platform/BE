@@ -1,16 +1,15 @@
 from fastapi import HTTPException
-from routes.crawl.api_helper import change_date, make_url, make_url_esports, tt, weekDay
-
+from routes.crawl.api_helper import change_date, make_url, make_url_esports, tt, weekDay, sorted_schedule
 
 # 축구, 야구 crawling
 async def crawling_schedule(upperCategoryId: str, categoryId: str, count: int):
 
     first_num = (count) * 10
-    last_num = (count+1) * 10 - 1
+    last_num = (count+1) * 10
 
     game_schdule = {"games": []}
     # crawling url
-    url = make_url(upperCategoryId, categoryId)
+    url = await make_url(upperCategoryId, categoryId)
 
     # 해당 url로 부터 데이터 받아오기
     data = await tt(url)
@@ -26,7 +25,7 @@ async def crawling_schedule(upperCategoryId: str, categoryId: str, count: int):
             date, time = game.get("gameDateTime").split(
                 "T"
             )  # 2024-05-31T18:30:00 -> date = '2024-05-31' / time = '18:30:00'
-            weekname = weekDay(date)  # 2024-05-31 -> 금
+            weekname = await weekDay(date)  # 2024-05-31 -> 금
             date = date.replace("-", "")  # 2024-05-31 -> date = 20240531
             hour, minute, _ = time.split(":")  # 18:30:00 -> hour = 18 / minute = 30
 
@@ -41,6 +40,7 @@ async def crawling_schedule(upperCategoryId: str, categoryId: str, count: int):
                     "homeTeamEmblemUrl": game.get("homeTeamEmblemUrl"),
                 }
             )
+        game_schdule = await sorted_schedule(game_schdule)
         return game_schdule
     else:
         raise HTTPException(status_code=200, detail=400)
@@ -50,11 +50,11 @@ async def crawling_schedule(upperCategoryId: str, categoryId: str, count: int):
 async def esports_crawling_schedule(esportsId: str, count: int):
 
     first_num = (count) * 10
-    last_num = (count+1) * 10 - 1
+    last_num = (count+1) * 10
 
     game_schdule = {"games": []}
     # crawling esports url
-    url = make_url_esports(esportsId)
+    url = await make_url_esports(esportsId)
     print(url)
     # 해당 url로 부터 데이터 받아오기
     data = await tt(url)
@@ -68,10 +68,9 @@ async def esports_crawling_schedule(esportsId: str, count: int):
             if i >= game_schdule["total_count"]:
                 break
             game = games[i]
-            date, time = change_date(game.get("startDate")).split(
-                " "
-            )  # 2024-05-31 18:30 -> date = '2024-05-31' / time = '18:30:00'
-            weekname = weekDay(date)  # 2024-05-31 -> 금
+            date_time = await change_date(game.get("startDate"))
+            date, time = date_time.split(" ")  # 2024-05-31 18:30 -> date = '2024-05-31' / time = '18:30:00'
+            weekname = await weekDay(date)  # 2024-05-31 -> 금
             date = date.replace("-", "")  # 2024-05-31 -> date = 20240531
             hour, minute = time.split(":")  # 18:30:00 -> hour = 18 / minute = 30
 
@@ -86,6 +85,7 @@ async def esports_crawling_schedule(esportsId: str, count: int):
                     "awayTeamEmblemUrl": game.get("awayTeam").get("imageUrl"),
                 }
             )
+        game_schdule = await sorted_schedule(game_schdule)
         return game_schdule
     else:
         raise HTTPException(status_code=200, detail=400)

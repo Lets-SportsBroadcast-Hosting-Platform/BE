@@ -9,13 +9,13 @@ datedict = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"
 
 
 # date에 해당하는 요일을 반환하는 함수
-def weekDay(date):
+async def weekDay(date):
     datetime_date = datetime.strptime(date, "%Y-%m-%d")
     result = datedict[datetime_date.weekday()]
     return result
 
 # esports startdate값이 milliseconds값으로 오기때문에 변환하는 함수 271115456500->2015-05-03 18:30
-def change_date(timestamp_ms):
+async def change_date(timestamp_ms):
     # milliseconds -> seconds
     timestamp_s = timestamp_ms / 1000
     # timestamp 생성
@@ -36,7 +36,7 @@ async def tt(url):
             raise HTTPException(status_code=200, detail=400)
 
 
-def make_url(upperCategoryId, categoryId):
+async def make_url(upperCategoryId, categoryId):
     year = datetime.now().year
     month = datetime.now().month + 1
 
@@ -45,8 +45,18 @@ def make_url(upperCategoryId, categoryId):
     return url
 
 
-def make_url_esports(esportsId):
+async def make_url_esports(esportsId):
     year = datetime.now().year
     month = datetime.now().month + 1
     url = f"https://esports-api.game.naver.com/service/v2/schedule/month?month={year}-{month:02}&topLeagueId={esportsId}&relay=false"
     return url
+
+async def sorted_schedule(game_schedule:dict):
+    game_list = []
+    games = game_schedule["games"]
+    sorted_games = sorted(games, key=lambda x: (x['date'], x['time']))
+
+    for game in sorted_games:
+        game_list.append(game)
+    game_schedule["games"] = game_list
+    return game_schedule
