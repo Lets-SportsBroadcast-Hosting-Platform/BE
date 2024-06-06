@@ -60,7 +60,7 @@ async def read_partylist(
     hosting_list = []
     user_id = await jwt_token2user_id(jwToken)
     print(user_id)
-    _query = select(ParticipationModel.hosting_id).where(ParticipationModel.id == str(user_id))
+    _query = select(ParticipationModel.hosting_id).where(ParticipationModel.id == str(user_id), ParticipationModel.delete_state == False)
     hosting_id_list = await query_response(_query, db)
     if hosting_id_list:
         for hosting_id in hosting_id_list:
