@@ -69,3 +69,8 @@ class login_result_server2client(authlogin_client2server):
 class Insert_Userinfo(BaseModel):
     area: str
     alarm: bool
+
+class Update_Userinfo(BaseModel):
+    name:str
+    age:int
+    area:str

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import *
 import requests
 from database import settings
-from models.user_table import UserModel,Insert_Userinfo
+from models.user_table import UserModel,Insert_Userinfo,Update_Userinfo
 from auth.jwt import verify_access_token
 AUTH_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json'
 LOCAL_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/addr/stage.json'
@@ -72,6 +72,24 @@ async def insert_userinfo(id: str, user_info:Insert_Userinfo, db: AsyncSession):
     except:
         raise HTTPException(status_code=200, detail=400)
     
+async def making_user(userinfo: UserModel):
+    
+    result = {
+        'name':userinfo.name,
+        'age':datetime.now().year-userinfo.birthyear,
+        'area':userinfo.area
+    }
+    return result
+
+async def update_user_table(id:str, update_useinfo:Update_Userinfo, db):
+    value = {
+        UserModel.name : update_useinfo.name,
+        UserModel.birthyear : datetime.now().year - update_useinfo.age,
+        UserModel.area : update_useinfo.area
+    }
+    _query = update(UserModel).where(UserModel.id == id).values(value)
+    return await update_response(_query,db)
+
 async def making_participation(user_info: UserModel, hosting_info: HostingModel):
     age_range = f'{hosting_info.age_group_min}-{hosting_info.age_group_max}'
     data = ParticipationModel(
@@ -82,7 +100,7 @@ async def making_participation(user_info: UserModel, hosting_info: HostingModel)
         introduce = hosting_info.introduce,
         age_range = age_range,
         hosting_date = hosting_info.hosting_date,
-        create_time = datetime.now(),
+        create_time = hosting_info.create_time,
         delete_state = False
     )
     return data

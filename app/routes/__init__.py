@@ -18,6 +18,8 @@ from routes.hosting import (
 from routes.user import (
     user_search_local_route, 
     user_insert_route,
+    user_read_route,
+    user_update_route,
     user_apply_party_route,
     user_read_partylist_route,
     user_read_party_route,
@@ -59,3 +61,5 @@ user_routers.routes.append(user_apply_party_route)
 user_routers.routes.append(user_read_partylist_route)
 user_routers.routes.append(user_read_party_route)
 user_routers.routes.append(user_delete_party_route)
+user_routers.routes.append(user_read_route)
+user_routers.routes.append(user_update_route)

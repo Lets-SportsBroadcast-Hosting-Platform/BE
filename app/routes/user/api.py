@@ -1,16 +1,17 @@
+from datetime import datetime
 from database import get_db
 from database.search_query import query_response_one, query_response
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import search_sgisapi
-from models.user_table import UserModel, Insert_Userinfo
+from models.user_table import UserModel, Insert_Userinfo, Update_Userinfo
 from models.hosting_table import HostingModel
 from models.participation_table import ParticipationModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import insert_userinfo, making_participation
 from auth.jwt import jwt_token2user_id
-from routes.user.api_helper import read_hosting_tables, delete_party_table
+from routes.user.api_helper import read_hosting_tables, delete_party_table, making_user, update_user_table
 from routes.hosting.api_helper import read_hosting_table
 from fastapi import Depends, Header, HTTPException, Response
 async def search_local(address:str):
@@ -34,7 +35,30 @@ async def insert_user(
         return await insert_userinfo(str(user_id), user_info, db)
     else:
         raise HTTPException(status_code=200, detail=400)
-
+async def read_user(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        db: AsyncSession = Depends(get_db)
+):
+    user_id = await jwt_token2user_id(jwToken)
+    query = select(UserModel).where(UserModel.id == str(user_id))
+    result = await query_response(query, db)
+    if result:
+        return await making_user(result[0])
+    else:
+        raise HTTPException(status_code=200, detail=400)
+    
+async def update_user(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        update_useinfo:Update_Userinfo,
+        db: AsyncSession = Depends(get_db)
+):
+    user_id = await jwt_token2user_id(jwToken)
+    query = select(UserModel).where(UserModel.id == str(user_id))
+    result = await query_response(query, db)
+    if result:
+        return await update_user_table(str(user_id), update_useinfo, db)
+    else:
+        raise HTTPException(status_code=200, detail=400)
 async def apply_party(
         jwToken: Annotated[str | None, Header(convert_underscores=False)],
         hosting_id:int,
@@ -60,7 +84,7 @@ async def read_partylist(
     hosting_list = []
     user_id = await jwt_token2user_id(jwToken)
     print(user_id)
-    _query = select(ParticipationModel.hosting_id).where(ParticipationModel.id == str(user_id), ParticipationModel.delete_state == False)
+    _query = select(ParticipationModel.hosting_id).where(ParticipationModel.id == str(user_id), ParticipationModel.delete_state == False, ParticipationModel.hosting_date > datetime.now())
     hosting_id_list = await query_response(_query, db)
     if hosting_id_list:
         for hosting_id in hosting_id_list:
@@ -68,7 +92,7 @@ async def read_partylist(
             hosting_list.append(hosting)
         return hosting_list
     else:
-        raise HTTPException(status_code=200, detatil={'detail':400, 'message':'예약내역이 없습니다.'})
+        raise HTTPException(status_code=200, detail={'detail':400, 'message':'예약내역이 없습니다.'})
     
     
 async def read_party(
