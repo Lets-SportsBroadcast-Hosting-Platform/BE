@@ -112,7 +112,7 @@ async def user_auth_db(
     else:
         auth_table.create_time = datetime.today()
         db.add_all([user_table, auth_table])
-        await db.commit()
+        await db.commit()   
         await db.refresh(user_table)
         await db.refresh(auth_table)
         jwt_token = create_jwt_access_token(auth_table.token, auth_table.provider)

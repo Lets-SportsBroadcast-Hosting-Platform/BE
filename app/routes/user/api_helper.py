@@ -1,9 +1,14 @@
+import base64
+import uuid
 from database.search_query import update_response
 from fastapi import HTTPException
 from models.user_table import UserModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import *
 import requests
 from database import settings
+from models.user_table import Insert_Userinfo
+from auth.jwt import verify_access_token
 AUTH_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json'
 LOCAL_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/addr/stage.json'
 GEO_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/addr/geocode.json'
@@ -44,3 +49,23 @@ async def search_sgisapi(address: str):
         return result
     except:
         raise HTTPException(status_code=200, detail=400) 
+    
+'''async def jwt_token2user_id(jwt):
+    token = verify_access_token(jwt)
+    user_id = uuid.UUID(bytes=base64.b64decode(token.get("auth_token")))
+    return user_id'''
+
+async def insert_userinfo(id: str, user_info:Insert_Userinfo, db: AsyncSession):
+    print('id', id)
+    print(user_info.alarm)
+    print(user_info.area)
+    try:
+        value = {
+            UserModel.alarm : user_info.alarm,
+            UserModel.area : user_info.area
+        }
+        _query = update(UserModel).where(UserModel.id == id).values(value)
+        
+        return await update_response(_query, db)
+    except:
+        raise HTTPException(status_code=200, detail=400)

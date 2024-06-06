@@ -52,11 +52,11 @@ async def check_bno(b_no: int, db: AsyncSession):
 
 
 # 클라이언트에서 받은 데이터를 StoreModel화하는 함수
-def make_store_data(data: StoreinsertModel) -> StoreModel:
+def make_store_data(data: StoreinsertModel, id:str) -> StoreModel:
     print('make_store')
     store_data = StoreModel(
         business_no=data.business_no,
-        id=data.id,
+        id=id,
         store_name=data.store_name,
         store_address=data.store_address,
         store_road_address=data.store_road_address,

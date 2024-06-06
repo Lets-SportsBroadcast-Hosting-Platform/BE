@@ -17,6 +17,7 @@ from routes.host.api_helper import (
     store_update_alarm,
     change_user_type,
 )
+from auth.jwt import jwt_token2user_id
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from .models.store_models import StoreinsertModel, StoreUpdateModel
@@ -64,9 +65,11 @@ async def searchlist(keyword: str, provider: str):
 
 # s3에 이미지를 올리고 db에 데이터를 커밋하는 api 함수
 async def insert_store(
+    jwToken: Annotated[str | None, Header(convert_underscores=False)],
     storeinsertmodel: StoreinsertModel, db: AsyncSession = Depends(get_db)
 ):
-    store_table = make_store_data(storeinsertmodel)
+    id = await jwt_token2user_id(jwToken)
+    store_table = make_store_data(storeinsertmodel, id)
     #store_table = make_store_data(json.loads(data), len(photos))
     #print(store_table)
     if not await check_bno(store_table.business_no, db):
