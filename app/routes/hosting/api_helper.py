@@ -9,7 +9,7 @@ from models.hosting_table import HostingModel
 from models.store_table import StoreModel
 from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from .models.hosting_models import HostinginsertModel
+
  
 
 # s3 사업자 번호를 기준으로 폴더를 만들고 이미지를 청크화해서 업로드하는 함수
@@ -53,10 +53,10 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
 
 
 # Hosting 테이블에서 사업자번호로 Read 하는 함수 CQRS : Read
-async def read_hosting_tables(hosting_name: str, status: bool, db: AsyncSession) -> HostingModel:
+async def read_hosting_tables(business_no: int, status: bool, db: AsyncSession) -> HostingModel:
     diff_status = not status
     _query = select(HostingModel).where(
-        HostingModel.business_no == hosting_name,
+        HostingModel.business_no == business_no,
         HostingModel.active_state == status,
         HostingModel.delete_state == diff_status,
     )
@@ -79,7 +79,7 @@ async def read_hosting_tables(hosting_name: str, status: bool, db: AsyncSession)
             })
         return hosting_list
     else:
-        raise HTTPException(status_code=200, detail=400)
+        return False
     
 def make_hosting_data(data: dict, update: bool):
     print(data)

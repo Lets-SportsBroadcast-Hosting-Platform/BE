@@ -47,6 +47,7 @@ async def naver_searchlist(keyword: str, provider: str) -> storeData:
 
 # Store 테이블에 사업자 번호기 존재하는지 확인하는 함수
 async def check_bno(b_no: int, db: AsyncSession):
+    print(b_no)
     _query = select(StoreModel).where(StoreModel.business_no == b_no)
     return True if (await query_response(_query, db)) else False
 

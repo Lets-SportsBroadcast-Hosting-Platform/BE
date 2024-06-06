@@ -1,13 +1,17 @@
 from database import get_db
-from database.search_query import query_response_one
+from database.search_query import query_response_one, query_response
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import search_sgisapi
 from models.user_table import UserModel, Insert_Userinfo
+from models.hosting_table import HostingModel
+from models.participation_table import ParticipationModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from routes.user.api_helper import insert_userinfo
+from routes.user.api_helper import insert_userinfo, making_participation
 from auth.jwt import jwt_token2user_id
+from routes.user.api_helper import read_hosting_tables, delete_party_table
+from routes.hosting.api_helper import read_hosting_table
 from fastapi import Depends, Header, HTTPException, Response
 async def search_local(address:str):
     result = await search_sgisapi(address)
@@ -31,4 +35,67 @@ async def insert_user(
     else:
         raise HTTPException(status_code=200, detail=400)
 
+async def apply_party(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        hosting_id:int,
+        db: AsyncSession = Depends(get_db)
+):
+    user_id = await jwt_token2user_id(jwToken)
+    user_query = select(UserModel).where(UserModel.id == str(user_id))
+    hosting_query = select(HostingModel).where(HostingModel.hosting_id == hosting_id)
+    user_info = await query_response(user_query, db)
+    hosting_info = await query_response(hosting_query, db)
+    data = await making_participation(user_info[0], hosting_info[0])
+    if data:
+        db.add(data)
+        await db.commit()
+        return 'Success Apply'
+    else:
+        raise HTTPException(status_code=200, detail=400)
+
+async def read_partylist(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        db: AsyncSession = Depends(get_db)
+):
+    hosting_list = []
+    user_id = await jwt_token2user_id(jwToken)
+    print(user_id)
+    _query = select(ParticipationModel.hosting_id).where(ParticipationModel.id == str(user_id))
+    hosting_id_list = await query_response(_query, db)
+    if hosting_id_list:
+        for hosting_id in hosting_id_list:
+            hosting = await read_hosting_tables(hosting_id, True, db)      
+            hosting_list.append(hosting)
+        return hosting_list
+    else:
+        raise HTTPException(status_code=200, detatil={'detail':400, 'message':'예약내역이 없습니다.'})
+    
+    
+async def read_party(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        hosting_id: int,
+        db: AsyncSession = Depends(get_db)
+):
+    user_id = await jwt_token2user_id(jwToken)
+    query = select(UserModel).where(UserModel.id == str(user_id))
+    result = (await query_response_one(query, db)).one_or_none()
+    if result:
+        return await read_hosting_table(hosting_id, db)
+    else:
+        raise HTTPException(status_code=200, detail={'detail':400, 'message':'jwtoken값이 유효하지않습니다.'})
+
+async def delete_party(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        hosting_id: int,
+        db: AsyncSession = Depends(get_db)
+):
+    user_id = await jwt_token2user_id(jwToken)
+    query = select(UserModel).where(UserModel.id == str(user_id))
+    result = (await query_response_one(query, db)).one_or_none()
+    if result:
+        return await delete_party_table(hosting_id, db)
+    else:
+        raise HTTPException(status_code=200, detail={'detail':400, 'message':'jwtoken값이 유효하지않습니다.'})
+
+    
     

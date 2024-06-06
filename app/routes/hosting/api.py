@@ -79,7 +79,7 @@ async def read_hostings(business_no: int, status:bool, db: AsyncSession = Depend
     if result:
         return result
     else:
-        raise HTTPException(status_code=200, detail=400)
+        return []
 
 
 async def read_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):

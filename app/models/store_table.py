@@ -17,7 +17,7 @@ class StoreModel(Base):
     store_name: Mapped[str] = mapped_column(nullable=False)
     store_address: Mapped[str] = mapped_column(nullable=False)
     store_road_address: Mapped[str] = mapped_column(nullable=False)
-    store_category: Mapped[str] = mapped_column(nullable=False)
+    store_category: Mapped[str] = mapped_column(nullable=True)
     store_number: Mapped[str] = mapped_column(nullable=True)
     store_image_url: Mapped[str] = mapped_column(nullable=True)
     store_image_count: Mapped[int] = mapped_column(nullable=True)
