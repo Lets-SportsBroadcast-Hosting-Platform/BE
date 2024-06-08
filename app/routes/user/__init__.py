@@ -1,11 +1,13 @@
 from fastapi.routing import APIRoute
 from routes.user.api import (
     search_local, 
-    insert_user, 
+    insert_user,
+    read_user,
+    update_user,
     apply_party, 
     read_partylist, 
     read_party,
-    delete_party
+    delete_party,
     )
 
 
@@ -21,3 +23,7 @@ user_read_partylist_route = APIRoute(path="/party_list", endpoint = read_partyli
 user_read_party_route = APIRoute(path="/party/{hosting_id}", endpoint=read_party, methods=["GET"])
 
 user_delete_party_route = APIRoute(path="/party{hosting_id}", endpoint=delete_party, methods=["DELETE"])
+
+user_read_route = APIRoute(path="", endpoint=read_user, methods=["GET"])
+
+user_update_route = APIRoute(path="", endpoint=update_user, methods=["PUT"])
