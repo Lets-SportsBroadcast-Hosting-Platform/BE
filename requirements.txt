@@ -14,3 +14,4 @@ pydantic-extra-types==2.7.0
 pydantic-settings==2.2.1
 pydantic_core==2.18.2
 requests==2.31.0
+pytz==2024.1

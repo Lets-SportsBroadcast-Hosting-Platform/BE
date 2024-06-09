@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import insert_userinfo, making_participation
 from auth.jwt import jwt_token2user_id
-from routes.user.api_helper import read_hosting_tables, delete_party_table, making_user, update_user_table
+from routes.user.api_helper import delete_party_table, read_hosting_tables, making_user, update_user_table,add_current_person
 from routes.hosting.api_helper import read_hosting_table
 from fastapi import Depends, Header, HTTPException, Response
 async def search_local(address:str):
@@ -73,6 +73,7 @@ async def apply_party(
     if data:
         db.add(data)
         await db.commit()
+        await add_current_person(hosting_id, db)
         return 'Success Apply'
     else:
         raise HTTPException(status_code=200, detail=400)

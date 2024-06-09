@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 import httpx
 from fastapi import HTTPException
-
+from database import KST, now
 datedict = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
 
 
@@ -27,7 +27,7 @@ async def change_date(timestamp_ms):
 
 
 # 크롤링정보 URL로 부터 get 요청
-async def tt(url):
+async def get_crawling_info(url):
     async with httpx.AsyncClient(http2=True) as client:
         response = await client.get(url)
         if response.status_code == 200:
@@ -37,26 +37,20 @@ async def tt(url):
 
 
 async def make_url(upperCategoryId, categoryId):
-    year = datetime.now().year
-    month = datetime.now().month + 1
+    today = KST.localize(now).today()
+    today_plus_31 = (today + timedelta(days=31)).strftime("%Y-%m-%d")
 
-    days_in_month = calendar.monthrange(year, month)[1]
-    url = f"https://api-gw.sports.naver.com/schedule/games?fields=basic%2CsuperCategoryId%2CcategoryName%2Cstadium%2CstatusNum%2CgameOnAir%2ChasVideo%2Ctitle%2CspecialMatchInfo%2CroundCode%2CseriesOutcome%2CseriesGameNo%2ChomeStarterName%2CawayStarterName%2CwinPitcherName%2ClosePitcherName%2ChomeCurrentPitcherName%2CawayCurrentPitcherName%2CbroadChannel&upperCategoryId={upperCategoryId}&categoryId={categoryId}&fromDate=2024-{month:02}-01&toDate=2024-{month:02}-{days_in_month}&roundCodes&size=500"
+    url = f"https://api-gw.sports.naver.com/schedule/games?fields=basic%2CsuperCategoryId%2CcategoryName%2Cstadium%2CstatusNum%2CgameOnAir%2ChasVideo%2Ctitle%2CspecialMatchInfo%2CroundCode%2CseriesOutcome%2CseriesGameNo%2ChomeStarterName%2CawayStarterName%2CwinPitcherName%2ClosePitcherName%2ChomeCurrentPitcherName%2CawayCurrentPitcherName%2CbroadChannel&upperCategoryId={upperCategoryId}&categoryId={categoryId}&fromDate={today.strftime("%Y-%m-%d")}&toDate={today_plus_31}&roundCodes&size=500"
     return url
 
 
 async def make_url_esports(esportsId):
-    year = datetime.now().year
-    month = datetime.now().month + 1
+    year = KST.localize(now).year
+    month = KST.localize(now).month + 1
     url = f"https://esports-api.game.naver.com/service/v2/schedule/month?month={year}-{month:02}&topLeagueId={esportsId}&relay=false"
     return url
 
 async def sorted_schedule(game_schedule:dict):
-    game_list = []
-    games = game_schedule["games"]
-    sorted_games = sorted(games, key=lambda x: (x['date'], x['time']))
-
-    for game in sorted_games:
-        game_list.append(game)
-    game_schedule["games"] = game_list
+    sorted_games = sorted(game_schedule.get("games"), key=lambda x: (x["date"], x["time"]))
+    game_schedule["games"] = [game for game in sorted_games]
     return game_schedule

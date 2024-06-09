@@ -1,5 +1,5 @@
-import base64
-import uuid
+
+from database import KST, now, settings
 from datetime import datetime
 from database.search_query import update_response, query_response
 from fastapi import HTTPException
@@ -10,47 +10,29 @@ from sqlalchemy import *
 import requests
 from database import settings
 from models.user_table import UserModel,Insert_Userinfo,Update_Userinfo
-from auth.jwt import verify_access_token
+
 AUTH_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json'
 LOCAL_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/addr/stage.json'
 GEO_URL = 'https://sgisapi.kostat.go.kr/OpenAPI3/addr/geocode.json'
 async def search_sgisapi(address: str):
     try:
-        body = {
-            'consumer_key' : settings.SGISAPI_KEY,
-            'consumer_secret' : settings.SGISAPI_SECRET
-        }
-        response = requests.get(AUTH_URL, data=body) # 인증 accessToken발급
+        body = {"consumer_key": settings.SGISAPI_KEY, "consumer_secret": settings.SGISAPI_SECRET}
+        response = requests.get(AUTH_URL, data=body).json()  # 인증 accessToken발급
+        access_token = response["result"]["accessToken"]
+        req = {"accessToken": access_token, "address": address}
+        local_lists = requests.get(GEO_URL, data=req).json()
+        code = local_lists["result"]["resultdata"][0]["sgg_cd"]
 
-        response = response.json()
-        print(response)
-        access_token = response['result']['accessToken']
-        req = {
-            'accessToken':access_token,
-            'address' : address
-        }
-        local_lists = requests.get(GEO_URL, data=req)
-        local_lists = local_lists.json()
-        print(local_lists)
-        code = local_lists['result']['resultdata'][0]["sgg_cd"]
+        req = {"accessToken": access_token, "cd": code}
+        local_lists = requests.get(LOCAL_URL, data=req).json().get("result", "")
+        if local_lists:
+            return [{"addr_name": local_list["addr_name"]} for local_list in local_lists]
+        else:
+            raise HTTPException(status_code=200, detail=400)
 
-        #code = code[0]["sgg_cd"]
-        req = {
-            'accessToken':access_token,
-            'cd': code
-            
-        }
-        local_lists = requests.get(LOCAL_URL, data=req)
-        local_lists = local_lists.json()
-        local_lists = local_lists['result']
-        result = []
-        for local_list in local_lists:
-            result.append({
-                'addr_name': local_list['addr_name']
-            })
-        return result
     except:
-        raise HTTPException(status_code=200, detail=400) 
+        raise HTTPException(status_code=200, detail=400)
+
     
 '''async def jwt_token2user_id(jwt):
     token = verify_access_token(jwt)
@@ -67,25 +49,24 @@ async def insert_userinfo(id: str, user_info:Insert_Userinfo, db: AsyncSession):
             UserModel.area : user_info.area
         }
         _query = update(UserModel).where(UserModel.id == id).values(value)
-        
-        return await update_response(_query, db)
+        if await update_response(_query, db):
+            return '가입완료'
     except:
         raise HTTPException(status_code=200, detail=400)
     
 async def making_user(userinfo: UserModel):
     
-    result = {
-        'name':userinfo.name,
-        'age':datetime.now().year-userinfo.birthyear,
-        'area':userinfo.area
+    return {
+        "name": userinfo.name,
+        "age": KST.localize(now).year - userinfo.birthyear + 1,
+        "area": userinfo.area,
     }
-    return result
 
 async def update_user_table(id:str, update_useinfo:Update_Userinfo, db):
     value = {
-        UserModel.name : update_useinfo.name,
-        UserModel.birthyear : datetime.now().year - update_useinfo.age,
-        UserModel.area : update_useinfo.area
+        UserModel.name: update_useinfo.name,
+        UserModel.birthyear: KST.localize(now).year - update_useinfo.age + 1,
+        UserModel.area: update_useinfo.area,
     }
     _query = update(UserModel).where(UserModel.id == id).values(value)
     return await update_response(_query,db)
@@ -137,3 +118,11 @@ async def delete_party_table(hosting_id: int, db: AsyncSession):
     _query = update(ParticipationModel).where(ParticipationModel.hosting_id == hosting_id).values(value)
     return await update_response(_query,db)
     
+async def add_current_person(hosting_id: int, db: AsyncSession):
+    hosting_query = select(HostingModel.current_personnel).where(HostingModel.hosting_id == hosting_id)
+    current_personnel = await query_response(hosting_query, db)
+    value = {
+        HostingModel.current_personnel : current_personnel[0] + 1
+    }
+    _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
+    return await update_response(_query,db)

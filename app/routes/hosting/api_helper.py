@@ -59,6 +59,7 @@ async def read_hosting_tables(business_no: int, status: bool, db: AsyncSession) 
         HostingModel.business_no == business_no,
         HostingModel.active_state == status,
         HostingModel.delete_state == diff_status,
+        HostingModel.current_personnel < HostingModel.max_personnel
     )
     responses = (await query_response(_query, db))
     if responses:
@@ -135,7 +136,10 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
                 "store_image_url" : response_store.store_image_url,
                 "store_image_count" : response_store.store_image_count,
                 "screen_size" : response_store.screen_size,
-                "store_number" : response_store.store_number
+                "store_number" : response_store.store_number,
+                "store_name" : response_store.store_name,
+                "store_address" : response_store.store_address,
+                "store_road_address" : response_store.store_road_address
             }
             return hosting_list
     else:

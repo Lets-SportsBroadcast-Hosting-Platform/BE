@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from routes.crawl.api_helper import change_date, make_url, make_url_esports, tt, weekDay, sorted_schedule
+from routes.crawl.api_helper import change_date, make_url, make_url_esports, get_crawling_info, weekDay, sorted_schedule
 
 # 축구, 야구 crawling
 async def crawling_schedule(upperCategoryId: str, categoryId: str, count: int):
@@ -12,7 +12,7 @@ async def crawling_schedule(upperCategoryId: str, categoryId: str, count: int):
     url = await make_url(upperCategoryId, categoryId)
 
     # 해당 url로 부터 데이터 받아오기
-    data = await tt(url)
+    data = await get_crawling_info(url)
     # data에 포함된 games값 저장
     if data:
         games = data.get("result").get("games")
@@ -57,7 +57,7 @@ async def esports_crawling_schedule(esportsId: str, count: int):
     url = await make_url_esports(esportsId)
     print(url)
     # 해당 url로 부터 데이터 받아오기
-    data = await tt(url)
+    data = await get_crawling_info(url)
     # data에 포함된 games값 저장
     if data:
         games = data.get("content").get("matches")

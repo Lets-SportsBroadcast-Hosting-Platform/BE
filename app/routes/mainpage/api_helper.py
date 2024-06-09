@@ -11,14 +11,12 @@ async def read_hosting_tables(db: AsyncSession) -> HostingModel:
         HostingModel.active_state == True,
         HostingModel.delete_state == False,
     )
-    responses = (await query_response(_query, db))
+    responses = await query_response(_query, db)
     if responses:
-        hosting_list =[]
         # 객체의 컬럼 값을 가져오기
-        for response in responses:
-            #response = response[0]
-            hosting_list.append({
-                "hosting_id" : response.hosting_id,
+        return [
+            {
+                "hosting_id": response.hosting_id,
                 "hosting_name": response.hosting_name,
                 "business_no": response.business_no,
                 "introduce": response.introduce,
@@ -27,7 +25,8 @@ async def read_hosting_tables(db: AsyncSession) -> HostingModel:
                 "age_group_min": response.age_group_min,
                 "age_group_max": response.age_group_max,
                 "hosting_date": response.hosting_date,
-            })
-        return hosting_list
+            }
+            for response in responses
+        ]
     else:
         raise HTTPException(status_code=200, detail=400)
