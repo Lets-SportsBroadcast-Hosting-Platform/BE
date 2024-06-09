@@ -1,5 +1,7 @@
-from database.connection import Settings, conn_db, conn_S3
 
+from datetime import datetime
+from database.connection import Settings, conn_db, conn_S3
+from pytz import timezone
 # Settings 클래스를 인스턴스화 해서 .env 값을 가져온다.
 settings = Settings()
 
@@ -12,7 +14,8 @@ _s3 = conn_S3(
     settings.REGION_NAME,
     settings.BUCKET_NAME,
 )
-
+now = datetime.now()
+KST = timezone("Asia/Seoul")
 
 async def get_db():
     db = _engine.sessionmaker()

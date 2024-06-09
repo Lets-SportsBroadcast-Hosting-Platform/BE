@@ -85,13 +85,12 @@ async def insert_store(
 # db에있는 가게 조회
 async def read_store(
     business_no: int,
-    store_name: str = None,
     db: AsyncSession = Depends(get_db),
 ):
     if business_no:
         result = await host_read_store(business_no, db)
     else:
-        result = await user_read_store(store_name, db)
+        return HTTPException(status_code=200, detail={'detail':400, 'message':'사업자번호를 입력해주세요'})
     #result = await host_read_store(business_no, db)
     return result
 #business_no: Annotated[str | None, Header(convert_underscores=False)] = None,

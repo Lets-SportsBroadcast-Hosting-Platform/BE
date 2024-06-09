@@ -2,7 +2,8 @@ import base64
 import json
 import uuid
 from datetime import datetime
-
+from pytz import utc
+from database import KST, now, settings
 import httpx
 from auth.jwt import create_jwt_access_token
 from database import settings
@@ -89,7 +90,7 @@ def make_user_data(response: dict, provider: str, region: str, alarm: bool) -> (
         birthyear=response.get("birthyear"),
         area=region,
         alarm=alarm,
-        create_time = datetime.now()
+        create_time = KST.localize(now)
     )
     auth_data = AuthModel(token=str(base64.b64encode(user_uuid.bytes))[2:-1], provider=provider)
     return user_data, auth_data

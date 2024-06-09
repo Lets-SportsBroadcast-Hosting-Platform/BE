@@ -30,11 +30,10 @@ import json
         raise HTTPException(status_code=200, detail=400)'''
 
 async def make_hosting(data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)):
+    print(photos)
     data = json.loads(data)
     hosting_data = make_hosting_data(data, False)
     print(hosting_data)
-    #update_storeimage(hostinginsertmodel.business_no,len(photos), hostinginsertmodel.screen_size)
-    #print(hostingdata.game_start_date)
     print(hosting_data.business_no)
     if await check_bno(hosting_data.business_no, db):
         await update_storeimage(hosting_data.business_no, len(photos), data.get('screen_size'), db)
@@ -50,11 +49,9 @@ async def update_hosting(hosting_id : int,
                          photos: List[UploadFile] = File(...), 
                          db: AsyncSession = Depends(get_db)):
     data = json.loads(data)
-    print(data)
+    print(f"update_hosting > data : {data}")
     hosting_data = make_hosting_data(data, True)
-    print(hosting_data)
-    #update_storeimage(hostinginsertmodel.business_no,len(photos), hostinginsertmodel.screen_size)
-    #print(hostingdata.game_start_date)
+    print(f"update_hosting > hosting_data : {hosting_data}")
     await s3_upload(str(hosting_data.business_no), photos)
     try:
 
@@ -76,10 +73,7 @@ async def update_hosting(hosting_id : int,
 # 클라이언트에서 호스팅 id를 받아 응답하는 함수
 async def read_hostings(business_no: int, status:bool, db: AsyncSession = Depends(get_db)):
     result = await read_hosting_tables(business_no, status, db)
-    if result:
-        return result
-    else:
-        return []
+    return result if result else []
 
 
 async def read_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
