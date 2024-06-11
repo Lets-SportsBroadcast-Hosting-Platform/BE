@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from routes.crawl import esports_schedule_route, sports_schedule_route
+from routes.crawl import sports_schedule_route
 from routes.host import (
     auth_bussiness_num_route,
     search_store_route,
@@ -52,7 +52,7 @@ hosting_routers.routes.append(hosting_update_table_route)
 
 mainpage_routers.routes.append(mainpage_hosting_read_route)
 
-sports_crawl_routers.routes.append(esports_schedule_route)
+#sports_crawl_routers.routes.append(esports_schedule_route)
 sports_crawl_routers.routes.append(sports_schedule_route)
 
 user_routers.routes.append(user_search_local_route)
