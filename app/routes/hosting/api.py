@@ -30,20 +30,23 @@ import json
         raise HTTPException(status_code=200, detail=400)'''
 
 async def make_hosting(data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)):
-    print(photos)
-    data = json.loads(data)
-    hosting_data = make_hosting_data(data, False)
-    print(hosting_data)
-    print(hosting_data.business_no)
-    if await check_bno(hosting_data.business_no, db):
-        await update_storeimage(hosting_data.business_no, len(photos), data.get('screen_size'), db)
-        await s3_upload(hosting_data.business_no, photos)
-        db.add(hosting_data)
-        await db.commit()
-        return "호스팅 되었습니다."
-    else:
-        raise HTTPException(status_code=200, detail=400)
-
+    try:
+        print('photo:', photos)
+        data = json.loads(data)
+        hosting_data = make_hosting_data(data, False)
+        print(hosting_data)
+        print(hosting_data.business_no)
+        if await check_bno(hosting_data.business_no, db):
+            await update_storeimage(hosting_data.business_no, len(photos), data.get('screen_size'), db)
+            await s3_upload(hosting_data.business_no, photos)
+            db.add(hosting_data)
+            await db.commit()
+            return "호스팅 되었습니다."
+        else:
+            raise HTTPException(status_code=200, detail=400)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise 
 async def update_hosting(hosting_id : int, 
                          data: str = Form(...), 
                          photos: List[UploadFile] = File(...), 
