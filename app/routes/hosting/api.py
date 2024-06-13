@@ -1,23 +1,25 @@
-from database import get_db
 import io
-from fastapi import Depends, HTTPException, File, UploadFile, Form
+import json
 from typing import List
+
+from database import get_db
+from fastapi import Depends, File, Form, HTTPException, UploadFile
 from routes.host.api_helper import check_bno
 from routes.hosting.api_helper import (
-    read_hosting_table, 
-    read_hosting_tables, 
-    update_hosting_table, 
     delete_hosting_table,
-    update_storeimage,
     make_hosting_data,
-    update_hosting_table,
+    read_hosting_table,
+    read_hosting_tables,
     s3_upload,
-    )
+    s3_upload_issue,
+    update_hosting_table,
+    update_storeimage,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
-import json
+
 # 클라이언트에서 호스팅 정보를 받아 db에 등록하는 api 함수
-#async def make_hosting(hostinginsertmodel: HostinginsertModel,  photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)):
-'''async def make_hosting(hostinginsertmodel: HostinginsertModel, db: AsyncSession = Depends(get_db)):
+# async def make_hosting(hostinginsertmodel: HostinginsertModel,  photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)):
+"""async def make_hosting(hostinginsertmodel: HostinginsertModel, db: AsyncSession = Depends(get_db)):
     hosting_data = make_hosting_data(hostinginsertmodel)
     print(hosting_data)
     #update_storeimage(hostinginsertmodel.business_no,len(photos), hostinginsertmodel.screen_size)
@@ -27,18 +29,27 @@ import json
         await db.commit()
         return "호스팅 되었습니다."
     else:
-        raise HTTPException(status_code=200, detail=400)'''
+        raise HTTPException(status_code=200, detail=400)"""
 
-async def make_hosting(data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)):
+
+async def test_img_upload(photos: List[UploadFile] = File(...)):
+    return await s3_upload_issue("test_img_upload", photos)
+
+
+async def make_hosting_issue(
+    data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)
+):
     try:
-        print('photo:', photos)
+        print("photo:", photos)
         data = json.loads(data)
         hosting_data = make_hosting_data(data, False)
         print(hosting_data)
         print(hosting_data.business_no)
         if await check_bno(hosting_data.business_no, db):
-            await update_storeimage(hosting_data.business_no, len(photos), data.get('screen_size'), db)
-            await s3_upload(hosting_data.business_no, photos)
+            await update_storeimage(
+                hosting_data.business_no, len(photos), data.get("screen_size"), db
+            )
+            await s3_upload_issue(str(hosting_data.business_no), photos)
             db.add(hosting_data)
             await db.commit()
             return "호스팅 되었습니다."
@@ -46,11 +57,39 @@ async def make_hosting(data: str = Form(...), photos: List[UploadFile] = File(..
             raise HTTPException(status_code=200, detail=400)
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise 
-async def update_hosting(hosting_id : int, 
-                         data: str = Form(...), 
-                         photos: List[UploadFile] = File(...), 
-                         db: AsyncSession = Depends(get_db)):
+        raise
+
+
+async def make_hosting(
+    data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)
+):
+    try:
+        print("photo:", photos)
+        data = json.loads(data)
+        hosting_data = make_hosting_data(data, False)
+        print(hosting_data)
+        print(hosting_data.business_no)
+        if await check_bno(hosting_data.business_no, db):
+            await update_storeimage(
+                hosting_data.business_no, len(photos), data.get("screen_size"), db
+            )
+            await s3_upload(str(hosting_data.business_no), photos)
+            db.add(hosting_data)
+            await db.commit()
+            return "호스팅 되었습니다."
+        else:
+            raise HTTPException(status_code=200, detail=400)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise
+
+
+async def update_hosting(
+    hosting_id: int,
+    data: str = Form(...),
+    photos: List[UploadFile] = File(...),
+    db: AsyncSession = Depends(get_db),
+):
     data = json.loads(data)
     print(f"update_hosting > data : {data}")
     hosting_data = make_hosting_data(data, True)
@@ -58,23 +97,25 @@ async def update_hosting(hosting_id : int,
     await s3_upload(str(hosting_data.business_no), photos)
     try:
 
-        await update_storeimage(hosting_data.business_no, len(photos), data['screen_size'], db)
-        
+        await update_storeimage(hosting_data.business_no, len(photos), data["screen_size"], db)
+
         await update_hosting_table(hosting_id, hosting_data, db)
         return "호스팅이 수정되었습니다."
     except:
         raise HTTPException(status_code=200, detail=400)
-#image, screen_size을 store테이블에 넣는 기능을 다른 api로 구현
-'''async def update_image_store(business_no: int, screen_size:int, photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)):
+
+
+# image, screen_size을 store테이블에 넣는 기능을 다른 api로 구현
+"""async def update_image_store(business_no: int, screen_size:int, photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)):
     if await check_bno(business_no, db):
         await update_storeimage(business_no, len(photos), screen_size, db)
         return "이미지 스크린 사이즈 저장"
     else:
-        raise HTTPException(status_code=200, detail=400)'''
+        raise HTTPException(status_code=200, detail=400)"""
 
 
 # 클라이언트에서 호스팅 id를 받아 응답하는 함수
-async def read_hostings(business_no: int, status:bool, db: AsyncSession = Depends(get_db)):
+async def read_hostings(business_no: int, status: bool, db: AsyncSession = Depends(get_db)):
     result = await read_hosting_tables(business_no, status, db)
     return result if result else []
 
@@ -86,13 +127,11 @@ async def read_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
         return result
     else:
         raise HTTPException(status_code=200, detail=400)
-    
-    
-    
+
+
 async def delete_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
     result = await delete_hosting_table(hosting_id, db)
     if result:
         return "삭제되었습니다."
     else:
         raise HTTPException(status_code=200, detail=400)
-    
