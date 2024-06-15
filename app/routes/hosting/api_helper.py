@@ -98,7 +98,6 @@ async def read_hosting_tables(business_no: int, status: bool, db: AsyncSession) 
                 {
                     "hosting_id": response.hosting_id,
                     "hosting_name": response.hosting_name,
-                    "business_no": response.business_no,
                     "introduce": response.introduce,
                     "current_personnel": response.current_personnel,
                     "max_personnel": response.max_personnel,
@@ -112,12 +111,12 @@ async def read_hosting_tables(business_no: int, status: bool, db: AsyncSession) 
         return False
 
 
-def make_hosting_data(data: dict, update: bool):
+def make_hosting_data(data: dict, business_no:int, update: bool):
     print(data)
     if not update:
         hosting_data = HostingModel(
             hosting_name=data.get("hosting_name"),
-            business_no=data.get("business_no"),
+            business_no = business_no,
             introduce=data.get("introduce"),
             max_personnel=data.get("max_personnel"),
             age_group_min=data.get("age_group_min"),
@@ -128,6 +127,7 @@ def make_hosting_data(data: dict, update: bool):
     else:
         hosting_data = HostingModel(
             hosting_name=data.get("hosting_name"),
+            business_no = business_no,
             introduce=data.get("introduce"),
             max_personnel=data.get("max_personnel"),
             age_group_min=data.get("age_group_min"),

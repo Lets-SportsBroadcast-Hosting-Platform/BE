@@ -4,7 +4,7 @@ from typing import List
 
 import httpx
 from database import _s3, settings
-from database.search_query import query_response, update_response, delete_response
+from database.search_query import query_response, update_response, delete_response, query_response_one
 from fastapi import HTTPException, Response, UploadFile
 from models.store_table import StoreModel, storeData
 from models.user_table import UserModel
@@ -50,7 +50,13 @@ async def check_bno(b_no: int, db: AsyncSession):
     print(b_no)
     _query = select(StoreModel).where(StoreModel.business_no == b_no)
     return True if (await query_response(_query, db)) else False
-
+ 
+async def get_business_no(user_id: str, db):
+    print(type(user_id))
+    _query = select(StoreModel.business_no).where(StoreModel.id == str(user_id))
+    business_no = (await query_response_one(_query, db)).one_or_none()
+    print('get_business:',business_no)
+    return business_no
 
 # 클라이언트에서 받은 데이터를 StoreModel화하는 함수
 def make_store_data(data: StoreinsertModel, id:str) -> StoreModel:
