@@ -1,10 +1,13 @@
 import io
 import json
-from typing import List
-
+from typing import List, Annotated
+from database.search_query import query_response_one
 from database import get_db
-from fastapi import Depends, File, Form, HTTPException, UploadFile
-from routes.host.api_helper import check_bno
+from fastapi import Depends, File, Form, HTTPException, UploadFile, Header
+from models.user_table import UserModel
+from auth.jwt import jwt_token2user_id
+from sqlalchemy import select
+from routes.host.api_helper import check_bno, get_business_no
 from routes.hosting.api_helper import (
     delete_hosting_table,
     make_hosting_data,
@@ -37,51 +40,64 @@ async def test_img_upload(photos: List[UploadFile] = File(...)):
 
 
 async def make_hosting_issue(
+    jwToken: Annotated[str | None, Header(convert_underscores=False)],
     data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)
 ):
     try:
-        print("photo:", photos)
-        data = json.loads(data)
-        hosting_data = make_hosting_data(data, False)
-        print(hosting_data)
-        print(hosting_data.business_no)
-        if await check_bno(hosting_data.business_no, db):
-            await update_storeimage(
-                hosting_data.business_no, len(photos), data.get("screen_size"), db
-            )
-            await s3_upload_issue(str(hosting_data.business_no), photos)
-            db.add(hosting_data)
-            await db.commit()
-            return "호스팅 되었습니다."
-        else:
-            raise HTTPException(status_code=200, detail=400)
+        user_id = await jwt_token2user_id(jwToken)
+        print(user_id)
+        query = select(UserModel).where(UserModel.id == str(user_id))
+        result = (await query_response_one(query, db)).one_or_none()
+        if result:
+            business_no = await get_business_no(user_id, db)
+            print(business_no)
+            print('photo:', photos)
+            data = json.loads(data)
+            hosting_data = make_hosting_data(data,business_no, False)
+            print(hosting_data)
+            print(business_no)
+            if await check_bno(business_no, db):
+                await update_storeimage(business_no, len(photos), data.get('screen_size'), db)
+                await s3_upload(str(business_no), photos)
+                db.add(hosting_data)
+                await db.commit()
+                return "호스팅 되었습니다."
+            else:
+                raise HTTPException(status_code=200, detail=400)
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise
+        raise 
 
 
 async def make_hosting(
-    data: str = Form(...), photos: List[UploadFile] = File(...), db: AsyncSession = Depends(get_db)
-):
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        data: str = Form(...), 
+        photos: List[UploadFile] = File(...), 
+        db: AsyncSession = Depends(get_db)):
     try:
-        print("photo:", photos)
-        data = json.loads(data)
-        hosting_data = make_hosting_data(data, False)
-        print(hosting_data)
-        print(hosting_data.business_no)
-        if await check_bno(hosting_data.business_no, db):
-            await update_storeimage(
-                hosting_data.business_no, len(photos), data.get("screen_size"), db
-            )
-            await s3_upload(str(hosting_data.business_no), photos)
-            db.add(hosting_data)
-            await db.commit()
-            return "호스팅 되었습니다."
-        else:
-            raise HTTPException(status_code=200, detail=400)
+        user_id = await jwt_token2user_id(jwToken)
+        print(user_id)
+        query = select(UserModel).where(UserModel.id == str(user_id))
+        result = (await query_response_one(query, db)).one_or_none()
+        if result:
+            business_no = await get_business_no(user_id, db)
+            print(business_no)
+            print('photo:', photos)
+            data = json.loads(data)
+            hosting_data = make_hosting_data(data,business_no, False)
+            print(hosting_data)
+            print(business_no)
+            if await check_bno(business_no, db):
+                await update_storeimage(business_no, len(photos), data.get('screen_size'), db)
+                await s3_upload(str(business_no), photos)
+                db.add(hosting_data)
+                await db.commit()
+                return "호스팅 되었습니다."
+            else:
+                raise HTTPException(status_code=200, detail=400)
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise
+        raise 
 
 
 async def update_hosting(
@@ -115,9 +131,19 @@ async def update_hosting(
 
 
 # 클라이언트에서 호스팅 id를 받아 응답하는 함수
-async def read_hostings(business_no: int, status: bool, db: AsyncSession = Depends(get_db)):
-    result = await read_hosting_tables(business_no, status, db)
-    return result if result else []
+async def read_hostings(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)], 
+        status:bool, 
+        db: AsyncSession = Depends(get_db)):
+    user_id = await jwt_token2user_id(jwToken)
+    query = select(UserModel).where(UserModel.id == str(user_id))
+    result = (await query_response_one(query, db)).one_or_none()
+    if result:
+        business_no = await get_business_no(user_id, db)
+        hostings = await read_hosting_tables(business_no, status, db)
+        return hostings if hostings else []
+    else:
+        raise HTTPException(status_code=200, detail={'detail': 400, 'message':'유효하지않는 jwToken.'})
 
 
 async def read_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
