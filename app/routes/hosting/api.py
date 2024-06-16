@@ -99,7 +99,34 @@ async def make_hosting(
         error = f"An error occurred: {e}"
         return error
 
-
+async def make_hosting_exceptimage(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        data: str = Form(...), 
+        db: AsyncSession = Depends(get_db)):
+    try:
+        user_id = await jwt_token2user_id(jwToken)
+        print(user_id)
+        query = select(UserModel).where(UserModel.id == str(user_id))
+        result = (await query_response_one(query, db)).one_or_none()
+        if result:
+            business_no = await get_business_no(user_id, db)
+            print(business_no)
+            #print('photo:', photos)
+            data = json.loads(data)
+            hosting_data = make_hosting_data(data,business_no, False)
+            print(hosting_data)
+            print(business_no)
+            if await check_bno(business_no, db):
+                #await update_storeimage(business_no, len(photos), data.get('screen_size'), db)
+                #await s3_upload(str(business_no), photos)
+                db.add(hosting_data)
+                await db.commit()
+                return "호스팅 되었습니다."
+            else:
+                raise HTTPException(status_code=200, detail=400)
+    except Exception as e:
+        error = f"An error occurred: {e}"
+        return error
 async def update_hosting(
     hosting_id: int,
     data: str = Form(...),
