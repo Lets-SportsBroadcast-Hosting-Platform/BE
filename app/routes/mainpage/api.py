@@ -10,4 +10,4 @@ async def read_hostings(db: AsyncSession = Depends(get_db)):
     if result:
         return result
     else:
-        raise HTTPException(status_code=200, detail=400)
+        return []

@@ -96,8 +96,8 @@ async def make_hosting(
             else:
                 raise HTTPException(status_code=200, detail=400)
     except Exception as e:
-        print(f"An error occurred: {e}")
-        raise 
+        error = f"An error occurred: {e}"
+        return error
 
 
 async def update_hosting(
