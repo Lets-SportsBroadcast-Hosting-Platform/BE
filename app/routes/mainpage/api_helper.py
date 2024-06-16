@@ -29,4 +29,4 @@ async def read_hosting_tables(db: AsyncSession) -> HostingModel:
             for response in responses
         ]
     else:
-        raise HTTPException(status_code=200, detail=400)
+        return []

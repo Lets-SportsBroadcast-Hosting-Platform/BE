@@ -41,26 +41,29 @@ async def s3_upload_issue(folder: str, photos: List[UploadFile]):
 # s3 사업자 번호를 기준으로 폴더를 만들고 이미지를 청크화해서 업로드하는 함수
 async def s3_upload(folder: str, photos: List[UploadFile]):
     print(photos)
-    if _s3.create_folder(_s3.bucket_name, folder):
-        for file_no in range(len(photos)):
-            image_data = await photos[file_no].read()
-            image = Image.open(io.BytesIO(image_data))
-            print(image.mode)
-            rgb_image = image
-            if image.mode in ("RGBA", "RGBX", "LA", "P", "PA"):
-                rgb_image = image.convert("RGB")
-            output = io.BytesIO()
-            rgb_image.save(output, format="JPEG", quality=80, optimize=True)
-            output.seek(0)
-            _s3.upload_file_in_chunks(
-                photo=output,
-                bucket_name=_s3.bucket_name,
-                object_name=f"{folder}/{file_no}",
-            )
-        return True
-    else:
-        return False
-
+    try:
+        if _s3.create_folder(_s3.bucket_name, folder):
+            for file_no in range(len(photos)):
+                image_data = await photos[file_no].read()
+                image = Image.open(io.BytesIO(image_data))
+                print(image.mode)
+                rgb_image = image
+                if image.mode in ("RGBA", "RGBX", "LA", "P", "PA"):
+                    rgb_image = image.convert("RGB")
+                output = io.BytesIO()
+                rgb_image.save(output, format="JPEG", quality=80, optimize=True)
+                output.seek(0)
+                _s3.upload_file_in_chunks(
+                    photo=output,
+                    bucket_name=_s3.bucket_name,
+                    object_name=f"{folder}/{file_no}",
+                )
+            return True
+        else:
+            return False
+    except Exception as e:
+        error = f"An error occurred: {e}"
+        return error
 
 # Hosting 테이블에 insert 하는 함수 CQRS : Create
 """async def insert_hosting_table(hostingModel: HostinginsertModel, db: AsyncSession) -> bool:
