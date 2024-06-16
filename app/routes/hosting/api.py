@@ -3,7 +3,7 @@ import json
 from typing import List, Annotated
 from database.search_query import query_response_one
 from database import get_db
-from fastapi import Depends, File, Form, HTTPException, UploadFile, Header
+from fastapi import Depends, File, Form, HTTPException, UploadFile, Header, Request
 from models.user_table import UserModel
 from auth.jwt import jwt_token2user_id
 from sqlalchemy import select
@@ -36,8 +36,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def test_img_upload(photos: List[UploadFile] = File(...)):
-    return await s3_upload_issue("test_img_upload", photos)
+    try:
+        await s3_upload_issue("test_img_upload", photos)
+        return 'good'
+    except Exception as e:
+        return f"An error occurred: {e}"
 
+'''async def test_img_upload(request: Request):
+    return request'''
 
 async def make_hosting_issue(
     jwToken: Annotated[str | None, Header(convert_underscores=False)],
