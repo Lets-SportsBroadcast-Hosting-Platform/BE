@@ -17,7 +17,6 @@ from routes import (
     user_routers
     )
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 middleware = [Middleware(
     CORSMiddleware,
@@ -29,11 +28,6 @@ middleware = [Middleware(
 
 # FastAPI
 app = FastAPI(middleware=middleware)
-# 예제: 최대 요청 크기 설정 (예: 100MB)
-app.add_middleware(
-    TrustedHostMiddleware,
-    max_request_size=100 * 1024 * 1024
-) #100mb
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request, exc):
