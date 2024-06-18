@@ -23,8 +23,23 @@ async def s3_upload_issue(folder: str, photos: List[UploadFile]):
             rgb_image = image
             if image.mode in ("RGBA", "RGBX", "LA", "P", "PA"):
                 rgb_image = image.convert("RGB")
+                
+            # 리사이즈와 품질 조정을 통한 이미지 크기 조정
+            max_size = (1024, 1024)
+            rgb_image.thumbnail(max_size)
             output = io.BytesIO()
-            rgb_image.save(output, format="JPEG", quality=80, optimize=True)
+            quality = 80
+
+            while True:
+                output.seek(0)
+                rgb_image.save(output, format="JPEG", quality=quality, optimize=True)
+                size = output.tell()
+                if size <= 1_000_000:  # 1MB 이하인지 확인
+                    break
+                quality -= 5  # 품질을 낮추어 재시도
+                if quality < 10:
+                    break  # 너무 낮은 품질을 피하기 위해 중단
+
             output.seek(0)
             _s3.upload_file_in_chunks(
                 photo=output,
