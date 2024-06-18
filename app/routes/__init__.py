@@ -10,13 +10,12 @@ from routes.host import (
 )
 from routes.hosting import (
     hosting_create_route,
-    hosting_create_route_issue,
     hosting_delete_table_route,
+    hosting_exceptimage,
     hosting_read_table_route,
     hosting_read_tables_route,
     hosting_test_image_upload,
     hosting_update_table_route,
-    hosting_exceptimage
 )
 from routes.login import login_route, login_token_route
 from routes.mainpage import mainpage_hosting_read_route
@@ -52,7 +51,6 @@ hosting_routers.routes.append(hosting_read_tables_route)
 hosting_routers.routes.append(hosting_read_table_route)
 hosting_routers.routes.append(hosting_delete_table_route)
 hosting_routers.routes.append(hosting_update_table_route)
-hosting_routers.routes.append(hosting_create_route_issue)
 hosting_routers.routes.append(hosting_test_image_upload)
 # hosting_routers.routes.append(store_input_image)
 hosting_routers.routes.append(hosting_exceptimage)
