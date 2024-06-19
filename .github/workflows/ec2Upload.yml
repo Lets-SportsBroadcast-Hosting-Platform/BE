@@ -45,7 +45,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: ${{ env.DOCKER_IMAGE }}:latest
-          build-args: 
+          build-args: |
             SERVER_SECRET_KEY: ${{ secrets.SERVER_SECRET_KEY }}
             KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
             KAKAO_RESTAPI_KEY: ${{ secrets.KAKAO_RESTAPI_KEY }}
