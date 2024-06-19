@@ -38,13 +38,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          builder: ${{ steps.buildx.outputs.name }}
-          push: true
-          tags: ${{ env.DOCKER_IMAGE }}:latest
+      
 
       - name: Create .env file
         run: |
@@ -64,6 +58,14 @@ jobs:
           echo "BUCKET_NAME=${{ secrets.BUCKET_NAME }}" >> .env
           echo "SGISAPI_KEY=${{ secrets.SGISAPI_KEY }}" >> .env
           echo "SGISAPI_SECRET=${{ secrets.SGISAPI_SECRET }}" >> .env    
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: ${{ env.DOCKER_IMAGE }}:latest
 
       
   deploy:
