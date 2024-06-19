@@ -58,8 +58,8 @@ jobs:
           echo "DATABASE_PWD=${{ secrets.DATABASE_PWD }}" >> .env
           echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
           echo "BUSINESS_SERVICE_KEY=${{ secrets.BUSINESS_SERVICE_KEY }}" >> .env
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_ACCESS_KEY_ID_=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY_=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
           echo "REGION_NAME=${{ secrets.REGION_NAME }}" >> .env
           echo "BUCKET_NAME=${{ secrets.BUCKET_NAME }}" >> .env
           echo "SGISAPI_KEY=${{ secrets.SGISAPI_KEY }}" >> .env
