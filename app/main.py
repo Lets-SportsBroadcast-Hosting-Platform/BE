@@ -1,6 +1,7 @@
 from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi import FastAPI, Header, Request, HTTPException
+
 from fastapi.exception_handlers import (
     http_exception_handler,
     request_validation_exception_handler,
