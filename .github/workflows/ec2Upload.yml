@@ -19,25 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup docker buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Cache docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ env.VERSION }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Login to ghcr
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
-
       - name: Create .env file
         run: |
           echo "SERVER_SECRET_KEY=${{ secrets.SERVER_SECRET_KEY }}" >> .env
@@ -56,6 +37,25 @@ jobs:
           echo "BUCKET_NAME=${{ secrets.BUCKET_NAME }}" >> .env
           echo "SGISAPI_KEY=${{ secrets.SGISAPI_KEY }}" >> .env
           echo "SGISAPI_SECRET=${{ secrets.SGISAPI_SECRET }}" >> .env    
+
+      - name: Setup docker buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ env.VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to ghcr
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and push
         id: docker_build

@@ -5,17 +5,19 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
 
-# Requirements and application code
+# Copy requirements and application code
 COPY ./requirements.txt /code/requirements.txt
 COPY ./app /code/app
+COPY .env /code/.env
 
 # Install dependencies
 RUN pip install --no-cache-dir -r /code/requirements.txt
 
 WORKDIR /usr/src/app
 COPY ./app /usr/src/app
-COPY .env /usr/src/app/.env  
+
 # Ensure .env is copied to the correct path
+# COPY .env /usr/src/app/.env
 
 EXPOSE 80
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
