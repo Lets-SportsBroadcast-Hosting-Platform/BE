@@ -43,8 +43,20 @@ async def naver_searchlist(keyword: str, provider: str) -> storeData:
             return storeData(json.loads(response.text).get("items"), provider)
         else:
             raise HTTPException(status_code=200, detail=400)
-
-
+#직접 입력
+async def other_searchlist(keyword: str, provider: str) -> storeData:
+    url = "https://dapi.kakao.com/v2/local/search/address.json"
+    header = {"Authorization": f"KakaoAK {settings.KAKAO_RESTAPI_KEY}"}
+    data = {"query": keyword, "size": 15}
+    async with httpx.AsyncClient(http2=True) as client:
+        response = await client.get(url, params=data, headers=header)
+        if response.status_code == 200:
+            try:
+                return storeData(json.loads(response.text).get("documents"), 'other')
+            except:
+                raise HTTPException(status_code=200, detail=400)
+        else:
+            raise HTTPException(status_code=200, detail=400)
 # Store 테이블에 사업자 번호기 존재하는지 확인하는 함수
 async def check_bno(b_no: int, db: AsyncSession):
     print(b_no)

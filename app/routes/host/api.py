@@ -11,6 +11,7 @@ from routes.host.api_helper import (
     kakao_searchlist,
     make_store_data,
     naver_searchlist,
+    other_searchlist,
     user_read_store,
     host_update_store,
     host_delete_store,
@@ -59,6 +60,8 @@ async def searchlist(keyword: str, provider: str):
         return await kakao_searchlist(keyword, provider)
     elif provider == "naver":
         return await naver_searchlist(keyword, provider)
+    elif provider == "other":
+        return await other_searchlist(keyword, provider)
     else:
         raise HTTPException(status_code=200, detail=400)
 
