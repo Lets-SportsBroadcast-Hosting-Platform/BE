@@ -43,6 +43,26 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 COPY ./app /code/app
 
+# Create .env file with the environment variables
+RUN echo "\
+    SERVER_SECRET_KEY=${SERVER_SECRET_KEY}\n\
+    KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}\n\
+    KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}\n\
+    NAVER_CLIENT_ID=${NAVER_CLIENT_ID}\n\
+    NAVER_SECRET_KEY=${NAVER_SECRET_KEY}\n\
+    DATABASE_HOST=${DATABASE_HOST}\n\
+    DATABASE_USER=${DATABASE_USER}\n\
+    DATABASE_PWD=${DATABASE_PWD}\n\
+    DATABASE_NAME=${DATABASE_NAME}\n\
+    BUSINESS_SERVICE_KEY=${BUSINESS_SERVICE_KEY}\n\
+    AWS_ACCESS_KEY_ID_=${AWS_ACCESS_KEY_ID}\n\
+    AWS_SECRET_ACCESS_KEY_=${AWS_SECRET_ACCESS_KEY}\n\
+    REGION_NAME=${REGION_NAME}\n\
+    BUCKET_NAME=${BUCKET_NAME}\n\
+    SGISAPI_KEY=${SGISAPI_KEY}\n\
+    SGISAPI_SECRET=${SGISAPI_SECRET}\n\
+    " > /usr/src/app/.env
+
 # Install dependencies
 RUN pip install --no-cache-dir -r /code/requirements.txt
 
