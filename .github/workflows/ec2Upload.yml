@@ -38,8 +38,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      
-
       - name: Create .env file
         run: |
           echo "SERVER_SECRET_KEY=${{ secrets.SERVER_SECRET_KEY }}" >> .env
@@ -67,7 +65,6 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_IMAGE }}:latest
 
-      
   deploy:
     needs: build
     name: Deploy
