@@ -44,24 +44,22 @@ COPY ./requirements.txt /code/requirements.txt
 COPY ./app /code/app
 
 # Create .env file with the environment variables
-RUN echo "\
-    SERVER_SECRET_KEY=${SERVER_SECRET_KEY}\n\
-    KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}\n\
-    KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}\n\
-    NAVER_CLIENT_ID=${NAVER_CLIENT_ID}\n\
-    NAVER_SECRET_KEY=${NAVER_SECRET_KEY}\n\
-    DATABASE_HOST=${DATABASE_HOST}\n\
-    DATABASE_USER=${DATABASE_USER}\n\
-    DATABASE_PWD=${DATABASE_PWD}\n\
-    DATABASE_NAME=${DATABASE_NAME}\n\
-    BUSINESS_SERVICE_KEY=${BUSINESS_SERVICE_KEY}\n\
-    AWS_ACCESS_KEY_ID_=${AWS_ACCESS_KEY_ID}\n\
-    AWS_SECRET_ACCESS_KEY_=${AWS_SECRET_ACCESS_KEY}\n\
-    REGION_NAME=${REGION_NAME}\n\
-    BUCKET_NAME=${BUCKET_NAME}\n\
-    SGISAPI_KEY=${SGISAPI_KEY}\n\
-    SGISAPI_SECRET=${SGISAPI_SECRET}\n\
-    " > /usr/src/app/.env
+RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" > /usr/src/app/.env && \
+    echo "KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}" >> /usr/src/app/.env && \
+    echo "KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}" >> /usr/src/app/.env && \
+    echo "NAVER_CLIENT_ID=${NAVER_CLIENT_ID}" >> /usr/src/app/.env && \
+    echo "NAVER_SECRET_KEY=${NAVER_SECRET_KEY}" >> /usr/src/app/.env && \
+    echo "DATABASE_HOST=${DATABASE_HOST}" >> /usr/src/app/.env && \
+    echo "DATABASE_USER=${DATABASE_USER}" >> /usr/src/app/.env && \
+    echo "DATABASE_PWD=${DATABASE_PWD}" >> /usr.src/app/.env && \
+    echo "DATABASE_NAME=${DATABASE_NAME}" >> /usr/src/app/.env && \
+    echo "BUSINESS_SERVICE_KEY=${BUSINESS_SERVICE_KEY}" >> /usr/src/app/.env && \
+    echo "AWS_ACCESS_KEY_ID_=${AWS_ACCESS_KEY_ID}" >> /usr/src/app/.env && \
+    echo "AWS_SECRET_ACCESS_KEY_=${AWS_SECRET_ACCESS_KEY}" >> /usr/src/app/.env && \
+    echo "REGION_NAME=${REGION_NAME}" >> /usr/src/app/.env && \
+    echo "BUCKET_NAME=${BUCKET_NAME}" >> /usr/src/app/.env && \
+    echo "SGISAPI_KEY=${SGISAPI_KEY}" >> /usr/src/app/.env && \
+    echo "SGISAPI_SECRET=${SGISAPI_SECRET}" >> /usr/src/app/.env
 
 # Install dependencies
 RUN pip install --no-cache-dir -r /code/requirements.txt
