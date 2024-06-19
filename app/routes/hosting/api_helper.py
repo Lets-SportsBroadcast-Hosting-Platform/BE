@@ -105,7 +105,7 @@ async def read_hosting_tables(business_no: int, status: bool, db: AsyncSession) 
         HostingModel.active_state == status,
         HostingModel.delete_state == diff_status,
         HostingModel.current_personnel < HostingModel.max_personnel,
-    )
+    ).order_by(HostingModel.update_time.desc())
     responses = await query_response(_query, db)
     if responses:
         hosting_list = []

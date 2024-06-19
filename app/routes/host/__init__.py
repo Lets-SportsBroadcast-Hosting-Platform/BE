@@ -16,7 +16,7 @@ search_store_route = APIRoute(
 store_insert_route = APIRoute(path="", endpoint=insert_store, methods=["POST"])
 
 # 가게 확인
-store_check_route = APIRoute(path="/search", endpoint=check_address, methods=["POST"])
+store_check_route = APIRoute(path="/search/check-address", endpoint=check_address, methods=["GET"])
 # 가게 조회
 store_read_route = APIRoute(path="/{business_no}", endpoint=read_store, methods=["GET"])
 
