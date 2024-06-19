@@ -8,22 +8,6 @@ env:
   DOCKER_IMAGE: ghcr.io/${{ github.actor }}/lets_server_image
   VERSION: ${{ github.sha }}
   NAME: lets_server
-  SERVER_SECRET_KEY: ${{ secrets.SERVER_SECRET_KEY }}
-  KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
-  KAKAO_RESTAPI_KEY: ${{ secrets.KAKAO_RESTAPI_KEY }}
-  NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
-  NAVER_SECRET_KEY: ${{ secrets.NAVER_SECRET_KEY }}
-  DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
-  DATABASE_USER: ${{ secrets.DATABASE_USER }}
-  DATABASE_PWD: ${{ secrets.DATABASE_PWD }}
-  DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-  BUSSINESS_SERVICE_KEY: ${{ secrets.BUSSINESS_SERVICE_KEY }}
-  AWS_ACCESS_KEY_ID_: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY_: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  REGION_NAME: ${{ secrets.REGION_NAME }}
-  BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-  SGISAPI_KEY: ${{ secrets.SGISAPI_KEY }}
-  SGISAPI_SECRET: ${{ secrets.SGISAPI_SECRET }}
 
 jobs:
   build:
@@ -60,6 +44,23 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: ${{ env.DOCKER_IMAGE }}:latest
+          build-args: |
+            SERVER_SECRET_KEY=${{ secrets.SERVER_SECRET_KEY }}
+            KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+            KAKAO_RESTAPI_KEY=${{ secrets.KAKAO_RESTAPI_KEY }}
+            NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+            NAVER_SECRET_KEY=${{ secrets.NAVER_SECRET_KEY }}
+            DATABASE_HOST=${{ secrets.DATABASE_HOST }}
+            DATABASE_USER=${{ secrets.DATABASE_USER }}
+            DATABASE_PWD=${{ secrets.DATABASE_PWD }}
+            DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+            BUSSINESS_SERVICE_KEY=${{ secrets.BUSSINESS_SERVICE_KEY }}
+            AWS_ACCESS_KEY_ID_=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY_=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            REGION_NAME=${{ secrets.REGION_NAME }}
+            BUCKET_NAME=${{ secrets.BUCKET_NAME }}
+            SGISAPI_KEY=${{ secrets.SGISAPI_KEY }}
+            SGISAPI_SECRET=${{ secrets.SGISAPI_SECRET }}
 
   deploy:
     needs: build
@@ -73,7 +74,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-      
+
       - name: Docker run
         run: |
           docker stop ${{ env.NAME }} || true
@@ -94,6 +95,6 @@ jobs:
           --env AWS_SECRET_ACCESS_KEY_=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
           --env REGION_NAME=${{ secrets.REGION_NAME }} \
           --env BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
-          --env BUCKET_NAME=${{ secrets.SGISAPI_KEY }} \
-          --env BUCKET_NAME=${{ secrets.SGISAPI_SECRET }} \
+          --env SGISAPI_KEY=${{ secrets.SGISAPI_KEY }} \
+          --env SGISAPI_SECRET=${{ secrets.SGISAPI_SECRET }} \
           --restart always ${{ env.DOCKER_IMAGE }}:latest
