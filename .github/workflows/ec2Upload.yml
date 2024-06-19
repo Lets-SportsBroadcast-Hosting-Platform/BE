@@ -2,7 +2,7 @@ name: Deploy with Docker
 
 on:
   push:
-    branches: [ main-not ]
+    branches: [ main ]
 
 env:
   DOCKER_IMAGE: ghcr.io/${{ github.actor }}/lets_server_image
@@ -90,8 +90,8 @@ jobs:
           --env DATABASE_PWD=${{ secrets.DATABASE_PWD }} \
           --env DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
           --env BUSSINESS_SERVICE_KEY=${{ secrets.BUSSINESS_SERVICE_KEY }} \
-          --env AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-          --env AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+          --env AWS_ACCESS_KEY_ID_=${{ secrets.AWS_ACCESS_KEY_ID }} \
+          --env AWS_SECRET_ACCESS_KEY_=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
           --env REGION_NAME=${{ secrets.REGION_NAME }} \
           --env BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
           --env BUCKET_NAME=${{ secrets.SGISAPI_KEY }} \
