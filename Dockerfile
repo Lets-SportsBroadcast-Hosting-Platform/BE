@@ -25,28 +25,46 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 COPY ./app /code/app
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-
-# .env 파일 생성
-RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" >> /code/app/.env && \
-    echo "KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}" >> /code/app/.env && \
-    echo "KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}" >> /code/app/.env && \
-    echo "NAVER_CLIENT_ID=${NAVER_CLIENT_ID}" >> /code/app/.env && \
-    echo "NAVER_SECRET_KEY=${NAVER_SECRET_KEY}" >> /code/app/.env && \
-    echo "DATABASE_HOST=${DATABASE_HOST}" >> /code/app/.env && \
-    echo "DATABASE_USER=${DATABASE_USER}" >> /code/app/.env && \
-    echo "DATABASE_PWD=${DATABASE_PWD}" >> /code/app/.env && \
-    echo "DATABASE_NAME=${DATABASE_NAME}" >> /code/app/.env && \
-    echo "BUSSINESS_SERVICE_KEY=${BUSSINESS_SERVICE_KEY}" >> /code/app/.env && \
-    echo "AWS_ACCESS_KEY_ID_=${AWS_ACCESS_KEY_ID_}" >> /code/app/.env && \
-    echo "AWS_SECRET_ACCESS_KEY_=${AWS_SECRET_ACCESS_KEY_}" >> /code/app/.env && \
-    echo "REGION_NAME=${REGION_NAME}" >> /code/app/.env && \
-    echo "BUCKET_NAME=${BUCKET_NAME}" >> /code/app/.env && \
-    echo "SGISAPI_KEY=${SGISAPI_KEY}" >> /code/app/.env && \
-    echo "SGISAPI_SECRET=${SGISAPI_SECRET}" >> /code/app/.env
+RUN pip install --no-cache-dir -r /code/requirements.txt
 
 WORKDIR /usr/src/app
 COPY ./app /usr/src/app
+
+# 디버깅을 위해 ARG 출력
+RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" && \
+    echo "KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}" && \
+    echo "KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}" && \
+    echo "NAVER_CLIENT_ID=${NAVER_CLIENT_ID}" && \
+    echo "NAVER_SECRET_KEY=${NAVER_SECRET_KEY}" && \
+    echo "DATABASE_HOST=${DATABASE_HOST}" && \
+    echo "DATABASE_USER=${DATABASE_USER}" && \
+    echo "DATABASE_PWD=${DATABASE_PWD}" && \
+    echo "DATABASE_NAME=${DATABASE_NAME}" && \
+    echo "BUSSINESS_SERVICE_KEY=${BUSSINESS_SERVICE_KEY}" && \
+    echo "AWS_ACCESS_KEY_ID_=${AWS_ACCESS_KEY_ID_}" && \
+    echo "AWS_SECRET_ACCESS_KEY_=${AWS_SECRET_ACCESS_KEY_}" && \
+    echo "REGION_NAME=${REGION_NAME}" && \
+    echo "BUCKET_NAME=${BUCKET_NAME}" && \
+    echo "SGISAPI_KEY=${SGISAPI_KEY}" && \
+    echo "SGISAPI_SECRET=${SGISAPI_SECRET}"
+
+# .env 파일 생성
+RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" >> .env && \
+    echo "KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}" >> .env && \
+    echo "KAKAO_RESTAPI_KEY=${KAKAO_RESTAPI_KEY}" >> .env && \
+    echo "NAVER_CLIENT_ID=${NAVER_CLIENT_ID}" >> .env && \
+    echo "NAVER_SECRET_KEY=${NAVER_SECRET_KEY}" >> .env && \
+    echo "DATABASE_HOST=${DATABASE_HOST}" >> .env && \
+    echo "DATABASE_USER=${DATABASE_USER}" >> .env && \
+    echo "DATABASE_PWD=${DATABASE_PWD}" >> .env && \
+    echo "DATABASE_NAME=${DATABASE_NAME}" >> .env && \
+    echo "BUSSINESS_SERVICE_KEY=${BUSSINESS_SERVICE_KEY}" >> .env && \
+    echo "AWS_ACCESS_KEY_ID_=${AWS_ACCESS_KEY_ID_}" >> .env && \
+    echo "AWS_SECRET_ACCESS_KEY_=${AWS_SECRET_ACCESS_KEY_}" >> .env && \
+    echo "REGION_NAME=${REGION_NAME}" >> .env && \
+    echo "BUCKET_NAME=${BUCKET_NAME}" >> .env && \
+    echo "SGISAPI_KEY=${SGISAPI_KEY}" >> .env && \
+    echo "SGISAPI_SECRET=${SGISAPI_SECRET}" >> .env
 
 EXPOSE 80
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
