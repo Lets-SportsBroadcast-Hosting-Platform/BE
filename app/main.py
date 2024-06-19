@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import FastAPI, Header
+from fastapi import FastAPI, Header, Request
 from fastapi.exception_handlers import (
     http_exception_handler,
     request_validation_exception_handler,
@@ -8,6 +8,7 @@ from fastapi.exception_handlers import (
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware import Middleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from routes import (
     host_routers, 
     hosting_routers, 
@@ -28,6 +29,21 @@ middleware = [Middleware(
 
 # FastAPI
 app = FastAPI(middleware=middleware)
+class LimitRequestSizeMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, max_size: int):
+        super().__init__(app)
+        self.max_size = max_size
+
+    async def dispatch(self, request: Request, call_next):
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > self.max_size:
+            raise HTTPException(
+                status_code=413, detail=f"Request Entity Too Large. Limit is {self.max_size} bytes."
+            )
+        response = await call_next(request)
+        return response
+# 100MB로 요청 크기 제한
+app.add_middleware(LimitRequestSizeMiddleware, max_size=100 * 1024 * 1024)  # 100MB로 제한
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request, exc):
