@@ -3,6 +3,7 @@ from routes.crawl import sports_schedule_route
 from routes.host import (
     auth_bussiness_num_route,
     search_store_route,
+    store_check_route,
     store_delete_route,
     store_insert_route,
     store_read_route,
@@ -43,6 +44,7 @@ host_routers.routes.append(store_insert_route)
 host_routers.routes.append(store_read_route)
 host_routers.routes.append(store_update_route)
 host_routers.routes.append(store_delete_route)
+host_routers.routes.append(store_check_route)
 login_routers.routes.append(login_route)
 login_routers.routes.append(login_token_route)
 
