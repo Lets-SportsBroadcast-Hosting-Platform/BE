@@ -47,23 +47,23 @@ jobs:
           tags: ${{ env.DOCKER_IMAGE }}:latest
 
       - name: Create .env file
-      run: |
-        echo "SERVER_SECRET_KEY=${{ secrets.SERVER_SECRET_KEY }}" >> .env
-        echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env
-        echo "KAKAO_RESTAPI_KEY=${{ secrets.KAKAO_RESTAPI_KEY }}" >> .env
-        echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
-        echo "NAVER_SECRET_KEY=${{ secrets.NAVER_SECRET_KEY }}" >> .env
-        echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> .env
-        echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> .env
-        echo "DATABASE_PWD=${{ secrets.DATABASE_PWD }}" >> .env
-        echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
-        echo "BUSSINESS_SERVICE_KEY=${{ secrets.BUSSINESS_SERVICE_KEY }}" >> .env
-        echo "AWS_ACCESS_KEY_ID_=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-        echo "AWS_SECRET_ACCESS_KEY_=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-        echo "REGION_NAME=${{ secrets.REGION_NAME }}" >> .env
-        echo "BUCKET_NAME=${{ secrets.BUCKET_NAME }}" >> .env
-        echo "SGISAPI_KEY=${{ secrets.SGISAPI_KEY }}" >> .env
-        echo "SGISAPI_SECRET=${{ secrets.SGISAPI_SECRET }}" >> .env    
+        run: |
+          echo "SERVER_SECRET_KEY=${{ secrets.SERVER_SECRET_KEY }}" >> .env
+          echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env
+          echo "KAKAO_RESTAPI_KEY=${{ secrets.KAKAO_RESTAPI_KEY }}" >> .env
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
+          echo "NAVER_SECRET_KEY=${{ secrets.NAVER_SECRET_KEY }}" >> .env
+          echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> .env
+          echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> .env
+          echo "DATABASE_PWD=${{ secrets.DATABASE_PWD }}" >> .env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+          echo "BUSINESS_SERVICE_KEY=${{ secrets.BUSINESS_SERVICE_KEY }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "REGION_NAME=${{ secrets.REGION_NAME }}" >> .env
+          echo "BUCKET_NAME=${{ secrets.BUCKET_NAME }}" >> .env
+          echo "SGISAPI_KEY=${{ secrets.SGISAPI_KEY }}" >> .env
+          echo "SGISAPI_SECRET=${{ secrets.SGISAPI_SECRET }}" >> .env    
 
       
   deploy:
