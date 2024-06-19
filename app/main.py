@@ -1,5 +1,6 @@
 from typing import Annotated
 
+
 from fastapi import FastAPI, Header
 from fastapi.exception_handlers import (
     http_exception_handler,
