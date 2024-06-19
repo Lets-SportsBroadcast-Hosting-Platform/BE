@@ -73,6 +73,7 @@ class storeData(BaseModel):
                 for data in stores
             ]
         else:
+            
             self.stores = [
                 {
                     "address_name": data.get("address").get("address_name"),

@@ -60,12 +60,12 @@ async def searchlist(keyword: str, provider: str):
         return await kakao_searchlist(keyword, provider)
     elif provider == "naver":
         return await naver_searchlist(keyword, provider)
-    elif provider == "other":
-        return await other_searchlist(keyword, provider)
     else:
         raise HTTPException(status_code=200, detail=400)
 
-
+async def check_address(keyword:str):
+    provider = 'other'
+    return await other_searchlist(keyword, provider)
 # s3에 이미지를 올리고 db에 데이터를 커밋하는 api 함수
 async def insert_store(
     jwToken: Annotated[str | None, Header(convert_underscores=False)],

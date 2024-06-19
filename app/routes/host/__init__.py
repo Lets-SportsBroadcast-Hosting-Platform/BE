@@ -1,6 +1,6 @@
 from fastapi.routing import APIRoute
 from models.store_table import storeData
-from routes.host.api import auth_business_num, insert_store, read_store, searchlist, update_store, delete_store
+from routes.host.api import auth_business_num, insert_store, read_store, searchlist, update_store, delete_store,check_address
 
 # 사업자 번호 조회 (헤더에 사업자번호)
 auth_bussiness_num_route = APIRoute(
@@ -15,6 +15,8 @@ search_store_route = APIRoute(
 # 가게 등록
 store_insert_route = APIRoute(path="", endpoint=insert_store, methods=["POST"])
 
+# 가게 확인
+store_check_route = APIRoute(path="/search", endpoint=check_address, methods=["POST"])
 # 가게 조회
 store_read_route = APIRoute(path="/{business_no}", endpoint=read_store, methods=["GET"])
 
