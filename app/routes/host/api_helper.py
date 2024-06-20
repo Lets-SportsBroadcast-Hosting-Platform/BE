@@ -144,6 +144,7 @@ async def user_read_store(store_name: str, db: AsyncSession):
 
 async def host_update_store(data: StoreUpdateModel, business_no: int, db: AsyncSession):
     value = {
+        StoreModel.store_name : data.store_name,
         StoreModel.store_address : data.store_address,
         StoreModel.store_road_address : data.store_road_address,
         StoreModel.store_name : data.store_name

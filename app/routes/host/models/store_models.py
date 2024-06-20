@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
 class StoreUpdateModel(BaseModel):
+    store_name: str
     store_address: str
     store_road_address: str
-    store_name: str
+    store_number: str
 
 class StoreinsertModel(BaseModel):
     business_no: int
