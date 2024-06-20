@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 
 from database import _s3, settings
-from database.search_query import query_response, update_response
+from database.search_query import query_response, update_response, delete_response
 from fastapi import HTTPException, UploadFile
 from models.hosting_table import HostingModel
 from models.store_table import StoreModel
@@ -194,9 +194,8 @@ async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
 
 
 async def delete_hosting_table(hosting_id: int, db: AsyncSession):
-    value = {HostingModel.active_state: False, HostingModel.delete_state: True}
-    _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
-    return await update_response(_query, db)
+    _query = delete(HostingModel).where(HostingModel.hosting_id == hosting_id)
+    return await delete_response(_query, db)
 
 
 async def update_hosting_table(hosting_id: int, hostingdata: HostingModel, db: AsyncSession):

@@ -55,12 +55,6 @@ async def other_searchlist(keyword: str, provider: str):
             return 1
         else:
             return 0
-            '''try:
-                if storeData(json.loads(response.text).get("documents"), 'other'):
-            except:
-                raise HTTPException(status_code=200, detail=400)'''
-        '''else:
-            raise HTTPException(status_code=200, detail=400)'''
 # Store 테이블에 사업자 번호기 존재하는지 확인하는 함수
 async def check_bno(b_no: int, db: AsyncSession):
     print(b_no)
@@ -150,6 +144,7 @@ async def user_read_store(store_name: str, db: AsyncSession):
 
 async def host_update_store(data: StoreUpdateModel, business_no: int, db: AsyncSession):
     value = {
+        StoreModel.store_name : data.store_name,
         StoreModel.store_address : data.store_address,
         StoreModel.store_road_address : data.store_road_address,
         StoreModel.store_name : data.store_name

@@ -134,9 +134,8 @@ async def update_hosting(
     print(f"update_hosting > data : {data}")
     hosting_data = make_hosting_data(data, True)
     print(f"update_hosting > hosting_data : {hosting_data}")
-    await s3_upload(str(hosting_data.business_no), photos)
+    await s3_upload(f"{str(hosting_data.business_no)}/{str(hosting_id)}", photos)
     try:
-
         await update_storeimage(hosting_data.business_no, len(photos), data["screen_size"], db)
 
         await update_hosting_table(hosting_id, hosting_data, db)
