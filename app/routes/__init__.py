@@ -29,6 +29,7 @@ from routes.user import (
     user_read_route,
     user_search_local_route,
     user_update_route,
+    user_delete_route,
 )
 
 login_routers = APIRouter(tags=["Login"])
@@ -71,3 +72,4 @@ user_routers.routes.append(user_read_party_route)
 user_routers.routes.append(user_delete_party_route)
 user_routers.routes.append(user_read_route)
 user_routers.routes.append(user_update_route)
+user_routers.routes.append(user_delete_route)
