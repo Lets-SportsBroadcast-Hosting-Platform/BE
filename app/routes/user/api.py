@@ -1,18 +1,20 @@
 from datetime import datetime
 from database import get_db
-from database.search_query import query_response_one, query_response
+from database.search_query import query_response_one, query_response,delete_response, update_response
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import search_sgisapi
 from models.user_table import UserModel, Insert_Userinfo, Update_Userinfo
+from models.store_table import StoreModel
 from models.hosting_table import HostingModel
 from models.participation_table import ParticipationModel
-from sqlalchemy import select
+from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import insert_userinfo, making_participation
 from auth.jwt import jwt_token2user_id
 from routes.user.api_helper import delete_party_table, read_hosting_tables, making_user, update_user_table,add_current_person
 from routes.hosting.api_helper import read_hosting_table
+from routes.host.api_helper import get_business_no
 from fastapi import Depends, Header, HTTPException, Response
 async def search_local(address:str):
     result = await search_sgisapi(address)
@@ -123,4 +125,21 @@ async def delete_party(
         raise HTTPException(status_code=200, detail={'detail':400, 'message':'jwtoken값이 유효하지않습니다.'})
 
     
-    
+async def delete_user(
+    jwtToken: Annotated[str | None, Header(convert_underscores=False)],
+    db: AsyncSession = Depends(get_db)
+):
+    user_id = await jwt_token2user_id(jwtToken)
+    business_no = await get_business_no(str(user_id), db)
+    query = select(UserModel.role).where(UserModel.id == str(user_id))
+    result = (await query_response_one(query, db)).one_or_none()
+    if result == 'host':
+        query_hosting = delete(HostingModel).where(HostingModel.business_no == business_no)
+        await delete_response(query_hosting, db)
+        query_store = delete(StoreModel).where(StoreModel.id == str(user_id))
+        await delete_response(query_store, db)
+    _query = update(UserModel).where(UserModel.id == str(user_id)).values({
+        UserModel.delete_state : True
+    })
+    return await update_response(_query, db)
+        

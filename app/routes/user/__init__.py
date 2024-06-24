@@ -8,6 +8,7 @@ from routes.user.api import (
     read_partylist, 
     read_party,
     delete_party,
+    delete_user
     )
 
 
@@ -27,3 +28,5 @@ user_delete_party_route = APIRoute(path="/party{hosting_id}", endpoint=delete_pa
 user_read_route = APIRoute(path="", endpoint=read_user, methods=["GET"])
 
 user_update_route = APIRoute(path="", endpoint=update_user, methods=["PUT"])
+
+user_delete_route = APIRoute(path="", endpoint=delete_user, methods=["DELETE"])

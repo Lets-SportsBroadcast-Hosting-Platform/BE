@@ -74,7 +74,7 @@ async def insert_store(
     storeinsertmodel: StoreinsertModel, db: AsyncSession = Depends(get_db)
 ):
     id = await jwt_token2user_id(jwToken)
-    store_table = make_store_data(storeinsertmodel, id)
+    store_table = make_store_data(storeinsertmodel, str(id))
     #store_table = make_store_data(json.loads(data), len(photos))
     #print(store_table)
     if not await check_bno(store_table.business_no, db):
