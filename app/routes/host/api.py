@@ -13,6 +13,7 @@ from routes.host.api_helper import (
     naver_searchlist,
     other_searchlist,
     user_read_store,
+    get_name,
     host_update_store,
     host_delete_store,
     store_update_alarm,
@@ -28,30 +29,46 @@ common_header = {"Accept": "application/json", "Content-Type": "application/json
 
 # 사업자 번호 인증 함수
 async def auth_business_num(
-    bno: Annotated[str | None, Header(convert_underscores=False)] = None
+    jwToken: Annotated[str | None, Header(convert_underscores=False)],
+    business_no: str,
+    start_dt: str,
+    db: AsyncSession = Depends(get_db)
 ) -> dict:
-    business_num = Auth_Business_Registration_Number(b_no=bno)
+    business_num = Auth_Business_Registration_Number(b_no=business_no)
     print(business_num.b_no)
-    url = "http://api.odcloud.kr/api/nts-businessman/v1/status?"
+    id = await jwt_token2user_id(jwToken)
+    name = await get_name(str(id), db)  # Ensure get_name is an async function
+    url = "http://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=IRIyY0JPZa84xQT1zGNnN3lnQ3zu7iuMgnOfdJUmdN6VgDzCCYP8PKzQTm09LRuFKs7mdN3bf9xBVPACVqD2xw=="
+    
+    body = {
+        "businesses": [
+            {
+                "b_no": business_num.b_no[0],
+                "start_dt": start_dt,
+                "p_nm": name
+            }
+        ]
+    }
+    
     async with httpx.AsyncClient(http2=True) as client:
         response = await client.post(
             url,
-            data=business_num.__json__(),
-            headers=common_header,
-            params=business_num.__params__(),
+            json=body,  # Use json parameter to automatically encode the dictionary as JSON
+            headers=common_header
         )
-        res_data = json.loads(response.text).get("data")[0]
-        if "등록되지 않은" not in res_data.get("tax_type"):
+        print(response)
+        res_data = response.json().get("data")[0]
+        if "02" not in res_data.get("valid"):
+            res_data = res_data.get("status")
             if res_data.get("b_stt") == "계속사업자":
                 return {
-                    "b_no": business_num.b_no[-1],
+                    "b_no": business_num.b_no,
                     "type": res_data.get("b_stt"),
                 }
             else:
                 raise HTTPException(status_code=200, detail=400)
         else:
             raise HTTPException(status_code=200, detail=400)
-
 
 # 가게 검색 함수
 async def searchlist(keyword: str, provider: str):

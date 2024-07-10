@@ -68,6 +68,11 @@ async def get_business_no(user_id: str, db):
     print('get_business:',business_no)
     return business_no
 
+async def get_name(user_id: str, db):
+    _query = select(UserModel.name).where(UserModel.id == str(user_id))
+    name = (await query_response_one(_query, db)).one_or_none()
+    print('사용자 이름:', name)
+    return name
 # 클라이언트에서 받은 데이터를 StoreModel화하는 함수
 def make_store_data(data: StoreinsertModel, id:str) -> StoreModel:
     print('make_store')
