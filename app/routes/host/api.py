@@ -39,13 +39,14 @@ async def auth_business_num(
     id = await jwt_token2user_id(jwToken)
     name = await get_name(str(id), db)  # Ensure get_name is an async function
     url = "http://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=IRIyY0JPZa84xQT1zGNnN3lnQ3zu7iuMgnOfdJUmdN6VgDzCCYP8PKzQTm09LRuFKs7mdN3bf9xBVPACVqD2xw=="
-    
+    if name is None:
+        name = '이름이존재하지않음'
     body = {
         "businesses": [
             {
                 "b_no": business_num.b_no[0],
                 "start_dt": start_dt,
-                "p_nm": name
+                "p_nm": str(name)
             }
         ]
     }
