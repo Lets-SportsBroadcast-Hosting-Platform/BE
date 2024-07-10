@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     BUCKET_NAME: Optional[str] = None
     SGISAPI_KEY: Optional[str] = None
     SGISAPI_SECRET: Optional[str] = None
+    MESSAGE_API_KEY: Optional[str] = None
+    MESSAGE_API_SECRET: Optional[str] = None
     class Config:
         env_file = ".env"
 

@@ -1,7 +1,7 @@
 import base64
 import uuid
 from typing import Annotated, Any
-
+import random
 from auth.jwt import verify_access_token
 from database import get_db
 from database.search_query import query_response_one
@@ -13,7 +13,7 @@ from models.user_table import (
     ssologin_client2server,
     userInfo_server2client,
 )
-from routes.login.api_helper import login_by_kakao, login_by_naver
+from routes.login.api_helper import login_by_kakao, login_by_naver, send_message
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,3 +55,19 @@ async def login_as_token(
         return Response("Success")
     else:
         raise HTTPException(status_code=200, detail=400)
+
+async def verify_number(
+        phone_number: str
+):
+    key = ''
+    for _ in range(5):
+        key += str(random.randint(0, 9))
+
+    data = {
+        "message": {
+            "to": phone_number,
+            "from": "01087636341",
+            "text": key
+        }
+    }
+    return await send_message(data)

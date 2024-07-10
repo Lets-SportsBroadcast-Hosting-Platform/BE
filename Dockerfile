@@ -19,6 +19,8 @@ ARG REGION_NAME
 ARG BUCKET_NAME
 ARG SGISAPI_KEY
 ARG SGISAPI_SECRET
+ARG MESSAGE_API_KEY
+ARG MESSAGE_API_SECRET
 
 WORKDIR /code
 
@@ -46,7 +48,9 @@ RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" && \
     echo "REGION_NAME=${REGION_NAME}" && \
     echo "BUCKET_NAME=${BUCKET_NAME}" && \
     echo "SGISAPI_KEY=${SGISAPI_KEY}" && \
-    echo "SGISAPI_SECRET=${SGISAPI_SECRET}"
+    echo "SGISAPI_SECRET=${SGISAPI_SECRET}" && \
+    echo "MESSAGE_API_KEY=${MESSAGE_API_KEY}" && \
+    echo "MESSAGE_API_SECRET=${MESSAGE_API_SECRET}"
 
 # .env 파일 생성
 RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" >> .env && \
@@ -65,6 +69,8 @@ RUN echo "SERVER_SECRET_KEY=${SERVER_SECRET_KEY}" >> .env && \
     echo "BUCKET_NAME=${BUCKET_NAME}" >> .env && \
     echo "SGISAPI_KEY=${SGISAPI_KEY}" >> .env && \
     echo "SGISAPI_SECRET=${SGISAPI_SECRET}" >> .env
+    echo "MESSAGE_API_KEY=${MESSAGE_API_KEY}" >> .env && \
+    echo "MESSAGE_API_SECRET=${MESSAGE_API_SECRET}" >> .env
 
 EXPOSE 80
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
