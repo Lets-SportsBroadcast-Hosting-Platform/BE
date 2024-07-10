@@ -1,7 +1,12 @@
 import base64
 import json
 import uuid
-from datetime import datetime
+import time
+import hmac
+import hashlib
+import requests
+import platform
+import datetime
 from pytz import utc
 from database import KST, now, settings
 import httpx
@@ -19,6 +24,9 @@ from models.user_table import (
 from sqlalchemy import ScalarResult, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+protocol = 'https'
+domain = 'api.coolsms.co.kr'
+prefix = ''
 
 # 카카오 로그인 함수 구현 CQRS : Create
 async def login_by_kakao(
@@ -111,7 +119,7 @@ async def user_auth_db(
         else:  # ValueError일때
             return jwt_token_or_error
     else:
-        auth_table.create_time = datetime.today()
+        auth_table.create_time = datetime.datetime.today()
         db.add_all([user_table, auth_table])
         await db.commit()   
         await db.refresh(user_table)
@@ -147,3 +155,48 @@ async def auth_table_check_by_userid(user_id: str, db: AsyncSession) -> ScalarRe
     query = select(AuthModel).where(AuthModel.token == str(user_id_to_token)[2:-1])
     result = (await query_response_one(query, db)).one_or_none()
     return result if result else False
+
+
+async def unique_id():
+    return str(uuid.uuid1().hex)
+
+async def get_iso_datetime():
+    utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
+    utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
+    return datetime.datetime.now().replace(tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
+
+async def get_signature(key, msg):
+    return hmac.new(key.encode(), msg.encode(), hashlib.sha256).hexdigest()
+
+async def get_headers(api_key, api_secret):
+    date = await get_iso_datetime()
+    salt = await unique_id()
+    combined_string = date + salt
+
+    return {
+        'Authorization': 'HMAC-SHA256 ApiKey=' + api_key + ', Date=' + date + ', salt=' + salt + ', signature=' +
+                         await get_signature(api_secret, combined_string),
+        'Content-Type': 'application/json; charset=utf-8'
+    }
+
+async def get_url(path):
+    url = '%s://%s' % (protocol, domain)
+    if prefix != '':
+        url = url + prefix
+    url = url + path
+    return url
+
+async def send_message(parameter):
+    api_key = settings.MESSAGE_API_KEY
+    api_secret = settings.MESSAGE_API_SECRET
+    parameter['agent'] = {
+        'sdkVersion': 'python/4.2.0',
+        'osPlatform': platform.platform() + " | " + platform.python_version()
+    }
+
+    url = await get_url('/messages/v4/send')
+    headers = await get_headers(api_key, api_secret)
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=parameter)
+        return response.json()
