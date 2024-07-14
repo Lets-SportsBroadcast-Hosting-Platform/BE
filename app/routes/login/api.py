@@ -6,6 +6,7 @@ from auth.jwt import verify_access_token
 from database import get_db
 from database.search_query import query_response_one
 from fastapi import Depends, Header, HTTPException, Response
+from models.certification_table import CertificationModel
 from models.user_table import (
     AuthModel,
     UserModel,
@@ -56,13 +57,19 @@ async def login_as_token(
     else:
         raise HTTPException(status_code=200, detail=400)
 
-async def verify_number(
-        phone_number: str
+async def send_certification_number(
+        phone_number: str,
+        db: AsyncSession = Depends(get_db)
 ):
     key = ''
     for _ in range(5):
         key += str(random.randint(0, 9))
-
+    #DB에 저장하는 로직
+    insertdata = CertificationModel(
+        certification_number = key
+    )
+    db.add(insertdata)
+    await db.commit()
     data = {
         "message": {
             "to": phone_number,
@@ -71,3 +78,17 @@ async def verify_number(
         }
     }
     return await send_message(data)
+
+async def check_certification_number(
+        id: int,
+        certification_number: str,
+        jwToken: Annotated[str | None, Header(convert_underscores=False)] = None,
+        db: AsyncSession = Depends(get_db)
+):
+    query = select(CertificationModel.certification_number).where(CertificationModel.id == id)
+    number = (await query_response_one(query, db)).one_or_none()
+    if certification_number == number:
+        #핸드폰 번호 저장 로직
+        return '인증완료'
+    else:
+        raise HTTPException(status_code=200, detail= {'status_code':400, 'message':'잘못된 인증번호'})

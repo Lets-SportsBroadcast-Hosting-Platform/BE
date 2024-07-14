@@ -219,3 +219,6 @@ async def update_storeimage(business_no: int, image_count: int, screen_size: int
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
 
     return await update_response(_query, db)
+
+async def insert_certification_number(certification_number:str, db: AsyncSession)
+    query = insert()
