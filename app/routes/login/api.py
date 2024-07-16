@@ -7,6 +7,7 @@ from database import get_db
 from database.search_query import query_response_one
 from fastapi import Depends, Header, HTTPException, Response
 from models.certification_table import CertificationModel
+from models.store_table import StoreModel
 from models.user_table import (
     AuthModel,
     UserModel,
@@ -48,14 +49,19 @@ async def login_as_token(
         AuthModel.provider == decode_jwt_token.get("provider"),
     )
     if not (await query_response_one(query, db)).one_or_none():
-        raise HTTPException(status_code=200, detail=400)
+        raise HTTPException(status_code=200, detail={'detail':400, 'message':'가입자가 아닙니다.'})
     user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
-    query = select(UserModel).where(UserModel.id == str(user_id))
-    result = (await query_response_one(query, db)).one_or_none()
-    if result:
-        return Response("Success")
+    query = select(UserModel.role).where(UserModel.id == str(user_id))
+    role = (await query_response_one(query, db)).one_or_none()
+    
+    if role == 'host':
+        query = select(StoreModel).where(StoreModel.id == str(user_id))
+        result = (await query_response_one(query,db)).one_or_none()
+        return result
     else:
-        raise HTTPException(status_code=200, detail=400)
+        query = select(UserModel).where(UserModel.id == str(user_id))
+        result = (await query_response_one(query,db)).one_or_none()
+        return result
 
 async def send_certification_number(
         phone_number: str,
