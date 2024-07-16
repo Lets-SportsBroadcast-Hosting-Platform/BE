@@ -126,3 +126,12 @@ async def add_current_person(hosting_id: int, db: AsyncSession):
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
     return await update_response(_query,db)
+
+async def check_applicants(hosting_id: int, db: AsyncSession):
+    hosting_query = select(HostingModel).where(HostingModel.hosting_id == hosting_id)
+    personnel = (await query_response(hosting_query, db))
+    personnel = personnel[0]
+    if personnel.current_personnel < personnel.max_personnel:
+        return True
+    else:
+        return False

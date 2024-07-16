@@ -8,6 +8,7 @@ from database import get_db
 from database.search_query import query_response_one
 from fastapi import Depends, File, Form, Header, HTTPException, Request, UploadFile
 from models.user_table import UserModel
+from models.participation_table import ParticipationModel
 from routes.host.api_helper import check_bno, get_business_no
 from routes.hosting.api_helper import (
     delete_hosting_table,
@@ -19,7 +20,7 @@ from routes.hosting.api_helper import (
     update_hosting_table,
     update_storeimage,
 )
-from sqlalchemy import select
+from sqlalchemy import select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # 클라이언트에서 호스팅 정보를 받아 db에 등록하는 api 함수
@@ -172,13 +173,31 @@ async def read_hostings(
         )
 
 
-async def read_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):
+async def read_hosting(
+        jwToken: Annotated[str | None, Header(convert_underscores=False)],
+        hosting_id: int, 
+        db: AsyncSession = Depends(get_db)):
     print(hosting_id)
+    user_id = await jwt_token2user_id(jwToken)
     result = await read_hosting_table(hosting_id, db)
+    query = select(UserModel.role).where(UserModel.id == str(user_id))
+    role = (await query_response_one(query, db)).one_or_none()
     if result:
-        return result
+        if role == 'host':
+            return result
+        else:
+            user_id = await jwt_token2user_id(jwToken)
+            query = select(exists().where(
+                ParticipationModel.hosting_id == hosting_id,
+                ParticipationModel.id == str(user_id)
+            ))
+            status = (await query_response_one(query, db)).one_or_none()
+            result['application_status'] = status
+            return result
     else:
-        raise HTTPException(status_code=200, detail=400)
+        raise HTTPException(
+            status_code=200, detail={"detail": 400, "message": "존재하지않는 호스팅id"}
+        )
 
 
 async def delete_hosting(hosting_id: int, db: AsyncSession = Depends(get_db)):

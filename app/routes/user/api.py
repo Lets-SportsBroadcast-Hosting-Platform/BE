@@ -12,7 +12,7 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import insert_userinfo, making_participation
 from auth.jwt import jwt_token2user_id
-from routes.user.api_helper import delete_party_table, read_hosting_tables, making_user, update_user_table,add_current_person
+from routes.user.api_helper import delete_party_table, read_hosting_tables, making_user, update_user_table,add_current_person, check_applicants
 from routes.hosting.api_helper import read_hosting_table
 from routes.host.api_helper import get_business_no
 from fastapi import Depends, Header, HTTPException, Response
@@ -61,24 +61,29 @@ async def update_user(
         return await update_user_table(str(user_id), update_useinfo, db)
     else:
         raise HTTPException(status_code=200, detail=400)
+    
 async def apply_party(
         jwToken: Annotated[str | None, Header(convert_underscores=False)],
         hosting_id:int,
         db: AsyncSession = Depends(get_db)
 ):
-    user_id = await jwt_token2user_id(jwToken)
-    user_query = select(UserModel).where(UserModel.id == str(user_id))
-    hosting_query = select(HostingModel).where(HostingModel.hosting_id == hosting_id)
-    user_info = await query_response(user_query, db)
-    hosting_info = await query_response(hosting_query, db)
-    data = await making_participation(user_info[0], hosting_info[0])
-    if data:
-        db.add(data)
-        await db.commit()
-        await add_current_person(hosting_id, db)
-        return 'Success Apply'
+    status = await check_applicants(hosting_id, db)
+    if status:
+        user_id = await jwt_token2user_id(jwToken)
+        user_query = select(UserModel).where(UserModel.id == str(user_id))
+        hosting_query = select(HostingModel).where(HostingModel.hosting_id == hosting_id)
+        user_info = await query_response(user_query, db)
+        hosting_info = await query_response(hosting_query, db)
+        data = await making_participation(user_info[0], hosting_info[0])
+        if data:
+            db.add(data)
+            await db.commit()
+            await add_current_person(hosting_id, db)
+            return 'Success Apply'
+        else:
+            raise HTTPException(status_code=200, detail=400)
     else:
-        raise HTTPException(status_code=200, detail=400)
+        raise HTTPException(status_code=200, detail={'status_code':400, 'message':'신청인원마감'})
 
 async def read_partylist(
         jwToken: Annotated[str | None, Header(convert_underscores=False)],

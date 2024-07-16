@@ -220,5 +220,5 @@ async def update_storeimage(business_no: int, image_count: int, screen_size: int
 
     return await update_response(_query, db)
 
-async def insert_certification_number(certification_number:str, db: AsyncSession)
-    query = insert()
+'''async def insert_certification_number(certification_number:str, db: AsyncSession):
+    query = insert()'''
