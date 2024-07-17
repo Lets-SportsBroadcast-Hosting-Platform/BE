@@ -6,6 +6,8 @@ from auth.jwt import verify_access_token
 from database import get_db
 from database.search_query import query_response_one
 from fastapi import Depends, Header, HTTPException, Response
+from models.certification_table import CertificationModel
+from models.store_table import StoreModel
 from models.user_table import (
     AuthModel,
     UserModel,
@@ -13,7 +15,7 @@ from models.user_table import (
     ssologin_client2server,
     userInfo_server2client,
 )
-from routes.login.api_helper import login_by_kakao, login_by_naver, send_message
+from routes.login.api_helper import login_by_kakao, login_by_naver, send_message, get_certification_id
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -47,27 +49,57 @@ async def login_as_token(
         AuthModel.provider == decode_jwt_token.get("provider"),
     )
     if not (await query_response_one(query, db)).one_or_none():
-        raise HTTPException(status_code=200, detail=400)
+        raise HTTPException(status_code=200, detail={'detail':400, 'message':'가입자가 아닙니다.'})
     user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
-    query = select(UserModel).where(UserModel.id == str(user_id))
-    result = (await query_response_one(query, db)).one_or_none()
-    if result:
-        return Response("Success")
+    query = select(UserModel.role).where(UserModel.id == str(user_id))
+    role = (await query_response_one(query, db)).one_or_none()
+    
+    if role == 'host':
+        query = select(StoreModel).where(StoreModel.id == str(user_id))
+        result = (await query_response_one(query,db)).one_or_none()
+        return result
     else:
-        raise HTTPException(status_code=200, detail=400)
+        query = select(UserModel).where(UserModel.id == str(user_id))
+        result = (await query_response_one(query,db)).one_or_none()
+        return result
 
-async def verify_number(
-        phone_number: str
+async def send_certification_number(
+        phone_number: str,
+        db: AsyncSession = Depends(get_db)
 ):
     key = ''
     for _ in range(5):
         key += str(random.randint(0, 9))
-
-    data = {
-        "message": {
-            "to": phone_number,
-            "from": "01087636341",
-            "text": key
+    #DB에 저장하는 로직
+    insertdata = CertificationModel(
+        certification_number = key
+    )
+    db.add(insertdata)
+    await db.commit()
+    id = await get_certification_id(key, db)
+    if id:
+        data = {
+            "message": {
+                "to": phone_number,
+                "from": "01087636341",
+                "text": key
+            }
         }
-    }
-    return await send_message(data)
+        await send_message(data)
+        return {'id': id}
+    else:
+        raise HTTPException(status_code=200, detail={'detail':400, 'message':'인증번호을 재요청해주세요'})
+
+async def check_certification_number(
+        id: int,
+        certification_number: str,
+        jwToken: Annotated[str | None, Header(convert_underscores=False)] = None,
+        db: AsyncSession = Depends(get_db)
+):
+    query = select(CertificationModel.certification_number).where(CertificationModel.id == id)
+    number = (await query_response_one(query, db)).one_or_none()
+    if certification_number == number:
+        #핸드폰 번호 저장 로직
+        return '인증완료'
+    else:
+        raise HTTPException(status_code=200, detail= {'status_code':400, 'message':'잘못된 인증번호'})

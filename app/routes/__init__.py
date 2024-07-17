@@ -18,7 +18,7 @@ from routes.hosting import (
     hosting_test_image_upload,
     hosting_update_table_route,
 )
-from routes.login import login_route, login_token_route, verify_phone_number
+from routes.login import login_route, login_token_route, send_certification_number_route, check_certification_number_route
 from routes.mainpage import mainpage_hosting_read_route
 from routes.user import (
     user_apply_party_route,
@@ -46,10 +46,11 @@ host_routers.routes.append(store_read_route)
 host_routers.routes.append(store_update_route)
 host_routers.routes.append(store_delete_route)
 host_routers.routes.append(store_check_route)
+
 login_routers.routes.append(login_route)
 login_routers.routes.append(login_token_route)
-login_routers.routes.append(verify_phone_number)
-
+login_routers.routes.append(send_certification_number_route)
+login_routers.routes.append(check_certification_number_route)
 
 hosting_routers.routes.append(hosting_create_route)
 hosting_routers.routes.append(hosting_read_tables_route)
