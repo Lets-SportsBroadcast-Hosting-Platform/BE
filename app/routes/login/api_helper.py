@@ -14,6 +14,7 @@ from auth.jwt import create_jwt_access_token
 from database import settings
 from database.search_query import query_response_one
 from fastapi import HTTPException
+from models.certification_table import CertificationModel
 from models.user_table import (
     AuthModel,
     UserModel,
@@ -200,3 +201,8 @@ async def send_message(parameter):
     async with httpx.AsyncClient() as client:
         response = await client.post(url, headers=headers, json=parameter)
         return response.json()
+    
+async def get_certification_id(key:str, db:AsyncSession):
+    query = select(CertificationModel.id).where(CertificationModel.certification_number == key)
+    id = (await query_response_one(query, db)).one_or_none()
+    return id

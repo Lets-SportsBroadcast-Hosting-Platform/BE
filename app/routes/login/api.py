@@ -15,7 +15,7 @@ from models.user_table import (
     ssologin_client2server,
     userInfo_server2client,
 )
-from routes.login.api_helper import login_by_kakao, login_by_naver, send_message
+from routes.login.api_helper import login_by_kakao, login_by_naver, send_message, get_certification_id
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -76,14 +76,19 @@ async def send_certification_number(
     )
     db.add(insertdata)
     await db.commit()
-    data = {
-        "message": {
-            "to": phone_number,
-            "from": "01087636341",
-            "text": key
+    id = await get_certification_id(key, db)
+    if id:
+        data = {
+            "message": {
+                "to": phone_number,
+                "from": "01087636341",
+                "text": key
+            }
         }
-    }
-    return await send_message(data)
+        await send_message(data)
+        return {'id': id}
+    else:
+        raise HTTPException(status_code=200, detail={'detail':400, 'message':'인증번호을 재요청해주세요'})
 
 async def check_certification_number(
         id: int,
