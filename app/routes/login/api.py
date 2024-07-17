@@ -2,7 +2,7 @@ import base64
 import uuid
 from typing import Annotated, Any
 import random
-from auth.jwt import verify_access_token
+from auth.jwt import verify_access_token, jwt_token2user_id
 from database import get_db
 from database.search_query import query_response_one
 from fastapi import Depends, Header, HTTPException, Response
@@ -15,7 +15,13 @@ from models.user_table import (
     ssologin_client2server,
     userInfo_server2client,
 )
-from routes.login.api_helper import login_by_kakao, login_by_naver, send_message, get_certification_id
+from routes.login.api_helper import (
+    login_by_kakao,
+    login_by_naver, 
+    send_message, 
+    get_certification_id,
+    update_phone_number
+)
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -93,13 +99,15 @@ async def send_certification_number(
 async def check_certification_number(
         id: int,
         certification_number: str,
+        phone_number: str,
         jwToken: Annotated[str | None, Header(convert_underscores=False)] = None,
         db: AsyncSession = Depends(get_db)
 ):
+    user_id = await jwt_token2user_id(jwToken)
     query = select(CertificationModel.certification_number).where(CertificationModel.id == id)
     number = (await query_response_one(query, db)).one_or_none()
     if certification_number == number:
-        #핸드폰 번호 저장 로직
+        await update_phone_number(phone_number, user_id, db)
         return '인증완료'
     else:
         raise HTTPException(status_code=200, detail= {'status_code':400, 'message':'잘못된 인증번호'})

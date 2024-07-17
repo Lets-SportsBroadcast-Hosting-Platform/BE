@@ -21,6 +21,7 @@ class UserModel(Base):
     create_time: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
     update_time: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True, onupdate=func.now())
     delete_state: Mapped[bool] = mapped_column(nullable=False, default=False)
+    phone: Mapped[str] = mapped_column(nullable=True)
 # 인증 테이블 CQRS : Create
 class AuthModel(Base):
     __tablename__ = "Auth"

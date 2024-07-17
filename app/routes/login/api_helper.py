@@ -12,7 +12,7 @@ from database import KST, now, settings
 import httpx
 from auth.jwt import create_jwt_access_token
 from database import settings
-from database.search_query import query_response_one
+from database.search_query import query_response_one, update_response
 from fastapi import HTTPException
 from models.certification_table import CertificationModel
 from models.user_table import (
@@ -22,7 +22,7 @@ from models.user_table import (
     ssologin_client2server,
     userInfo_server2client,
 )
-from sqlalchemy import ScalarResult, select
+from sqlalchemy import ScalarResult, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 protocol = 'https'
@@ -206,3 +206,10 @@ async def get_certification_id(key:str, db:AsyncSession):
     query = select(CertificationModel.id).where(CertificationModel.certification_number == key)
     id = (await query_response_one(query, db)).one_or_none()
     return id
+
+async def update_phone_number(number: str, user_id: str, db:AsyncSession):
+    value = {
+        UserModel.phone : number
+    }
+    query = update(UserModel).where(UserModel.id == user_id).values(value)
+    return await update_response(query, db)

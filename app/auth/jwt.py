@@ -27,4 +27,4 @@ def verify_access_token(jwt_token: str) -> str:
 async def jwt_token2user_id(jwt):
     token = verify_access_token(jwt)
     user_id = uuid.UUID(bytes=base64.b64decode(token.get("auth_token")))
-    return user_id
+    return str(user_id)
