@@ -79,13 +79,7 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
     except Exception as e:
         error = f"An error occurred: {e}"
         return error
-'''async def s3_upload(bussiness_no: str):
-    result = []
-    for i in range(5):
-        file_route = f'{bussiness_no}/{i}.jpg'
-        response=_s3.generate_presigned_post(_s3.bucket_name, file_route)
-        result.append(response)
-    return result'''
+
 # Hosting 테이블에 insert 하는 함수 CQRS : Create
 """async def insert_hosting_table(hostingModel: HostinginsertModel, db: AsyncSession) -> bool:
     try:
@@ -109,8 +103,7 @@ async def read_hosting_tables(business_no: int, status: bool, db: AsyncSession) 
     _query = select(HostingModel).where(
         HostingModel.business_no == business_no,
         HostingModel.active_state == status,
-        HostingModel.delete_state == diff_status,
-        HostingModel.current_personnel < HostingModel.max_personnel,
+        HostingModel.delete_state == diff_status
     ).order_by(HostingModel.update_time.desc())
     responses = await query_response(_query, db)
     if responses:
@@ -164,8 +157,6 @@ def make_hosting_data(data: dict, business_no:int, update: bool):
 async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
     _query = select(HostingModel).where(
         HostingModel.hosting_id == hosting_id,
-        HostingModel.active_state == True,
-        HostingModel.delete_state == False,
     )
     response = await query_response(_query, db)
     print(response)
@@ -216,10 +207,10 @@ async def update_hosting_table(hosting_id: int, hostingdata: HostingModel, db: A
     return await update_response(_query, db)
 
 
-async def update_storeimage(business_no: int, hosting_id:str, image_count: int, screen_size: int, db: AsyncSession):
+async def update_storeimage(business_no: int, image_count: int, screen_size: int, db: AsyncSession):
     value = {
         StoreModel.store_image_count: image_count,
-        StoreModel.store_image_url: f"https://s3.ap-northeast-2.amazonaws.com/letsapp.store/{business_no}/{hosting_id}",
+        StoreModel.store_image_url: f"https://s3.ap-northeast-2.amazonaws.com/letsapp.store/{business_no}/",
         StoreModel.screen_size: screen_size,
     }
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)
@@ -228,3 +219,12 @@ async def update_storeimage(business_no: int, hosting_id:str, image_count: int, 
 
 '''async def insert_certification_number(certification_number:str, db: AsyncSession):
     query = insert()'''
+
+async def update_state(hosting_id: int, db: AsyncSession):
+    value = {
+        HostingModel.active_state: False,
+        HostingModel.delete_state: True
+    }
+    _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
+
+    return await update_response(_query, db)

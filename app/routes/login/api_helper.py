@@ -208,6 +208,7 @@ async def get_certification_id(key:str, db:AsyncSession):
     return id
 
 async def update_phone_number(number: str, user_id: str, db:AsyncSession):
+    number = number.replace('-','')
     value = {
         UserModel.phone : number
     }
