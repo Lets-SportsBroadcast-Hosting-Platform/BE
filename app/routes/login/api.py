@@ -48,7 +48,7 @@ async def sso(
 async def login_as_token(
     jwToken: Annotated[str | None, Header(convert_underscores=False)] = None,
     db: AsyncSession = Depends(get_db),
-) -> userInfo_server2client:
+):
     try:
         decode_jwt_token = verify_access_token(authlogin_client2server(jwt_token=jwToken).jwt_token)
         query = select(AuthModel).where(
@@ -62,7 +62,7 @@ async def login_as_token(
     print(user_id)
     query = select(UserModel.role).where(UserModel.id == str(user_id))
     role = (await query_response_one(query, db)).one_or_none()
-    
+    print(role)
     if role == 'host':
         query = select(StoreModel).where(StoreModel.id == str(user_id))
         result = (await query_response_one(query,db)).one_or_none()
@@ -70,6 +70,7 @@ async def login_as_token(
     else:
         query = select(UserModel).where(UserModel.id == str(user_id))
         result = (await query_response_one(query,db)).one_or_none()
+        print(result)
         return result
 
 async def send_certification_number(
