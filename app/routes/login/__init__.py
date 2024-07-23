@@ -10,7 +10,7 @@ login_route = APIRoute(
 
 # 토큰으로 로그인 (Read) # 헤더 사용
 login_token_route = APIRoute(
-    path="/token", endpoint=login_as_token, methods=["GET"], response_model=userInfo_server2client
+    path="/token", endpoint=login_as_token, methods=["GET"]
 )
 
 send_certification_number_route = APIRoute(
