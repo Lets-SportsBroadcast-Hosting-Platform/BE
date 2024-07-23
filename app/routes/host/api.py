@@ -27,8 +27,33 @@ from .models.store_models import StoreinsertModel, StoreUpdateModel
 common_header = {"Accept": "application/json", "Content-Type": "application/json"}
 
 
-# 사업자 번호 인증 함수
+# 사업자 번호 인증 
 async def auth_business_num(
+    bno: Annotated[str | None, Header(convert_underscores=False)] = None
+) -> dict:
+    business_num = Auth_Business_Registration_Number(b_no=bno)
+    print(business_num.b_no)
+    url = "http://api.odcloud.kr/api/nts-businessman/v1/status?"
+    async with httpx.AsyncClient(http2=True) as client:
+        response = await client.post(
+            url,
+            data=business_num.__json__(),
+            headers=common_header,
+            params=business_num.__params__(),
+        )
+        res_data = json.loads(response.text).get("data")[0]
+        if "등록되지 않은" not in res_data.get("tax_type"):
+            if res_data.get("b_stt") == "계속사업자":
+                return {
+                    "b_no": business_num.b_no[-1],
+                    "type": res_data.get("b_stt"),
+                }
+            else:
+                raise HTTPException(status_code=200, detail=400)
+        else:
+            raise HTTPException(status_code=200, detail=400)
+        
+'''async def auth_business_num(
     jwToken: Annotated[str | None, Header(convert_underscores=False)],
     business_no: str,
     start_dt: str,
@@ -69,7 +94,7 @@ async def auth_business_num(
             else:
                 raise HTTPException(status_code=200, detail=400)
         else:
-            raise HTTPException(status_code=200, detail=400)
+            raise HTTPException(status_code=200, detail=400)'''
 
 # 가게 검색 함수
 async def searchlist(keyword: str, provider: str):

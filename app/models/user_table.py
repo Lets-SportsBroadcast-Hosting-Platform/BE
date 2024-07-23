@@ -35,7 +35,7 @@ class AuthModel(Base):
 class userInfo_server2client(BaseModel):
     name: Optional[str] = None
     gender: Optional[str] = None
-    birthyear: Optional[str] = None
+    birthyear: Optional[int] = None
     area: Optional[str] = None
 
     def __init__(self, user_instance: UserModel, **kwargs):
