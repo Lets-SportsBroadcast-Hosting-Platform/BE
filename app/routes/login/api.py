@@ -49,14 +49,17 @@ async def login_as_token(
     jwToken: Annotated[str | None, Header(convert_underscores=False)] = None,
     db: AsyncSession = Depends(get_db),
 ) -> userInfo_server2client:
-    decode_jwt_token = verify_access_token(authlogin_client2server(jwt_token=jwToken).jwt_token)
-    query = select(AuthModel).where(
-        AuthModel.token == decode_jwt_token.get("auth_token"),
-        AuthModel.provider == decode_jwt_token.get("provider"),
-    )
-    if not (await query_response_one(query, db)).one_or_none():
+    try:
+        decode_jwt_token = verify_access_token(authlogin_client2server(jwt_token=jwToken).jwt_token)
+        query = select(AuthModel).where(
+            AuthModel.token == decode_jwt_token.get("auth_token"),
+            AuthModel.provider == decode_jwt_token.get("provider"),
+        )
+    except:
         raise HTTPException(status_code=200, detail={'detail':400, 'message':'가입자가 아닙니다.'})
+    
     user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
+    print(user_id)
     query = select(UserModel.role).where(UserModel.id == str(user_id))
     role = (await query_response_one(query, db)).one_or_none()
     
