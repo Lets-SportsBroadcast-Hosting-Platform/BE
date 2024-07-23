@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import insert_userinfo, making_participation
 from auth.jwt import jwt_token2user_id
 from routes.user.api_helper import delete_party_table, read_hosting_tables, making_user, update_user_table,add_current_person, check_applicants
-from routes.hosting.api_helper import read_hosting_table
+from routes.hosting.api_helper import read_hosting_table, update_state
 from routes.host.api_helper import get_business_no
 from fastapi import Depends, Header, HTTPException, Response
 async def search_local(address:str):
@@ -83,6 +83,7 @@ async def apply_party(
         else:
             raise HTTPException(status_code=200, detail=400)
     else:
+        await update_state(hosting_id, db)
         raise HTTPException(status_code=200, detail={'status_code':400, 'message':'신청인원마감'})
 
 async def read_partylist(
@@ -112,8 +113,6 @@ async def read_party(
     query = select(UserModel).where(UserModel.id == str(user_id))
     result = (await query_response_one(query, db)).one_or_none()
     if result:
-        hosting_table = await read_hosting_table(hosting_id, db)
-        hosting_table['full_applicants'] = await check_applicants(hosting_id, db)
         return await read_hosting_table(hosting_id, db)
     else:
         raise HTTPException(status_code=200, detail={'detail':400, 'message':'jwtoken값이 유효하지않습니다.'})
