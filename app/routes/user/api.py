@@ -112,6 +112,8 @@ async def read_party(
     query = select(UserModel).where(UserModel.id == str(user_id))
     result = (await query_response_one(query, db)).one_or_none()
     if result:
+        hosting_table = await read_hosting_table(hosting_id, db)
+        hosting_table['full_applicants'] = await check_applicants(hosting_id, db)
         return await read_hosting_table(hosting_id, db)
     else:
         raise HTTPException(status_code=200, detail={'detail':400, 'message':'jwtoken값이 유효하지않습니다.'})

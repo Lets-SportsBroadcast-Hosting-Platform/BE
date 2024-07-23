@@ -20,6 +20,7 @@ from routes.hosting.api_helper import (
     update_hosting_table,
     update_storeimage,
 )
+from routes.user.api_helper import check_applicants
 from sqlalchemy import select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -229,6 +230,7 @@ async def read_hosting(
             ))
             status = (await query_response_one(query, db)).one_or_none()
             result['application_status'] = status
+            result['ability'] = await check_applicants(hosting_id, db)
             return result
     else:
         raise HTTPException(
