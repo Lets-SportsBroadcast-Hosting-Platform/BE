@@ -29,7 +29,8 @@ common_header = {"Accept": "application/json", "Content-Type": "application/json
 
 # 사업자 번호 인증 
 async def auth_business_num(
-    bno: Annotated[str | None, Header(convert_underscores=False)] = None
+    bno: Annotated[str | None, Header(convert_underscores=False)] = None,
+    start_dt: str = None
 ) -> dict:
     business_num = Auth_Business_Registration_Number(b_no=bno)
     print(business_num.b_no)
