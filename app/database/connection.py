@@ -58,9 +58,28 @@ class conn_S3:
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             region_name=region_name,
+            config=boto3.session.Config(signature_version='s3v4')
         )
         self.bucket_name = bucket_name
 
+    def generate_presigned_post(self, bucket_name, object_name, expiration=3600):
+        """
+        Generate a presigned URL to upload an S3 object
+
+        :param bucket_name: string
+        :param object_name: string
+        :param expiration: Time in seconds for the presigned URL to remain valid
+        :return: Dictionary containing the URL and fields for the POST request. If error, returns None.
+        """
+        try:
+            response = self.s3.generate_presigned_post(Bucket=bucket_name,
+                                                         Key=object_name,
+                                                         ExpiresIn=expiration)
+        except Exception as e:
+            print(f"Error generating presigned POST: {e}")
+            return None
+
+        return response
     # s3에 폴더 생성
     def create_folder(self, bucket, folder_name: str):
         print("폴더를 생성합니다.")

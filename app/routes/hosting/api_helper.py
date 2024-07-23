@@ -79,7 +79,13 @@ async def s3_upload(folder: str, photos: List[UploadFile]):
     except Exception as e:
         error = f"An error occurred: {e}"
         return error
-
+'''async def s3_upload(bussiness_no: str):
+    result = []
+    for i in range(5):
+        file_route = f'{bussiness_no}/{i}.jpg'
+        response=_s3.generate_presigned_post(_s3.bucket_name, file_route)
+        result.append(response)
+    return result'''
 # Hosting 테이블에 insert 하는 함수 CQRS : Create
 """async def insert_hosting_table(hostingModel: HostinginsertModel, db: AsyncSession) -> bool:
     try:
@@ -210,10 +216,10 @@ async def update_hosting_table(hosting_id: int, hostingdata: HostingModel, db: A
     return await update_response(_query, db)
 
 
-async def update_storeimage(business_no: int, image_count: int, screen_size: int, db: AsyncSession):
+async def update_storeimage(business_no: int, hosting_id:str, image_count: int, screen_size: int, db: AsyncSession):
     value = {
         StoreModel.store_image_count: image_count,
-        StoreModel.store_image_url: f"https://s3.ap-northeast-2.amazonaws.com/letsapp.store/{business_no}/",
+        StoreModel.store_image_url: f"https://s3.ap-northeast-2.amazonaws.com/letsapp.store/{business_no}/{hosting_id}",
         StoreModel.screen_size: screen_size,
     }
     _query = update(StoreModel).where(StoreModel.business_no == business_no).values(value)

@@ -82,7 +82,7 @@ async def make_hosting(
                 result = (await query_response_one(query, db)).first()
                 print(result)
 
-                await update_storeimage(business_no, len(photos), data.get("screen_size"), db)
+                await update_storeimage(business_no, str(result.__dict__.get('hosting_id')), len(photos), data.get("screen_size"), db)
                 await s3_upload(
                     f"{str(business_no)}/{str(result.__dict__.get('hosting_id'))}", photos
                 )
@@ -93,6 +93,42 @@ async def make_hosting(
         error = f"An error occurred: {e}"
         return error
 
+'''async def make_hosting(
+    jwToken: Annotated[str | None, Header(convert_underscores=False)],
+    data: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        user_id = await jwt_token2user_id(jwToken)
+        print(user_id)
+        query = select(UserModel).where(UserModel.id == str(user_id))
+        result = (await query_response_one(query, db)).one_or_none()
+        if result:
+            business_no = await get_business_no(user_id, db)
+            print(business_no)
+            data = json.loads(data)
+            hosting_data = make_hosting_data(data, business_no, False)
+            print(hosting_data)
+            print(business_no)
+            if await check_bno(business_no, db):
+                db.add(hosting_data)
+                await db.commit()
+                query = (
+                    select(HostingModel)
+                    .where(HostingModel.business_no == hosting_data.business_no)
+                    .order_by(HostingModel.hosting_id.desc())
+                    .limit(1)
+                ) 
+                result = (await query_response_one(query, db)).first()
+                print(result)
+
+                await update_storeimage(business_no, str(result.__dict__.get('hosting_id')), data.get("screen_size"), db)
+                return await s3_upload(business_no)
+            else:
+                raise HTTPException(status_code=200, detail=400)
+    except Exception as e:
+        error = f"An error occurred: {e}"
+        return error'''
 
 async def make_hosting_exceptimage(
     jwToken: Annotated[str | None, Header(convert_underscores=False)],

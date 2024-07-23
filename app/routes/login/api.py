@@ -55,13 +55,13 @@ async def login_as_token(
             AuthModel.token == decode_jwt_token.get("auth_token"),
             AuthModel.provider == decode_jwt_token.get("provider"),
         )
+        user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
+        print(user_id)
+        query = select(UserModel.role).where(UserModel.id == str(user_id))
+        role = (await query_response_one(query, db)).one_or_none()
     except:
         raise HTTPException(status_code=200, detail={'detail':400, 'message':'가입자가 아닙니다.'})
     
-    user_id = uuid.UUID(bytes=base64.b64decode(decode_jwt_token.get("auth_token")))
-    print(user_id)
-    query = select(UserModel.role).where(UserModel.id == str(user_id))
-    role = (await query_response_one(query, db)).one_or_none()
     print(role)
     if role == 'host':
         query = select(StoreModel).where(StoreModel.id == str(user_id))
