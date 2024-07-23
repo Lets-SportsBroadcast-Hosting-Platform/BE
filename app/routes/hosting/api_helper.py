@@ -7,6 +7,7 @@ from database.search_query import query_response, update_response, delete_respon
 from fastapi import HTTPException, UploadFile
 from models.hosting_table import HostingModel
 from models.store_table import StoreModel
+from models.participation_table import ParticipationModel
 from PIL import Image
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -227,4 +228,13 @@ async def update_state(hosting_id: int, db: AsyncSession):
     }
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values(value)
 
+    return await update_response(_query, db)
+
+async def current_personnel_count(hosting_id: int, db: AsyncSession):
+    _query = select(ParticipationModel).where(
+        ParticipationModel.hosting_id == hosting_id,
+        ParticipationModel.delete_state == False
+        )
+    result = (await query_response(_query, db))
+    _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values({HostingModel.current_personnel : len(result)})
     return await update_response(_query, db)
