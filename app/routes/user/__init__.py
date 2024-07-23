@@ -23,7 +23,7 @@ user_read_partylist_route = APIRoute(path="/party_list", endpoint = read_partyli
 
 user_read_party_route = APIRoute(path="/party/{hosting_id}", endpoint=read_party, methods=["GET"])
 
-user_delete_party_route = APIRoute(path="/party{hosting_id}", endpoint=delete_party, methods=["DELETE"])
+user_delete_party_route = APIRoute(path="/party/{hosting_id}", endpoint=delete_party, methods=["DELETE"])
 
 user_read_route = APIRoute(path="", endpoint=read_user, methods=["GET"])
 
