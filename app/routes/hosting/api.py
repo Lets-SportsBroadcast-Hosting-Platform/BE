@@ -19,6 +19,7 @@ from routes.hosting.api_helper import (
     s3_upload_issue,
     update_hosting_table,
     update_storeimage,
+    current_personnel_count
 )
 from routes.user.api_helper import check_applicants
 from sqlalchemy import select, exists
@@ -39,12 +40,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
         raise HTTPException(status_code=200, detail=400)"""
 
 
-async def test_img_upload(photos: List[UploadFile] = File(...)):
-    try:
-        await s3_upload_issue("test_img_upload", photos)
-        return "good"
-    except Exception as e:
-        return f"An error occurred: {e}"
+async def test_img_upload(hosting_id: int, db: AsyncSession = Depends(get_db)):
+    return await current_personnel_count(hosting_id, db)
 
 
 """async def test_img_upload(request: Request):

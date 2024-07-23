@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import insert_userinfo, making_participation
 from auth.jwt import jwt_token2user_id
 from routes.user.api_helper import delete_party_table, read_hosting_tables, making_user, update_user_table,add_current_person, check_applicants
-from routes.hosting.api_helper import read_hosting_table, update_state
+from routes.hosting.api_helper import read_hosting_table, update_state, current_personnel_count
 from routes.host.api_helper import get_business_no
 from fastapi import Depends, Header, HTTPException, Response
 async def search_local(address:str):
@@ -126,6 +126,7 @@ async def delete_party(
     query = select(UserModel).where(UserModel.id == str(user_id))
     result = (await query_response_one(query, db)).one_or_none()
     if result:
+        await current_personnel_count(hosting_id, db)
         return await delete_party_table(hosting_id, db)
     else:
         raise HTTPException(status_code=200, detail={'detail':400, 'message':'jwtoken값이 유효하지않습니다.'})
