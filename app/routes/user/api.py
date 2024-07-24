@@ -8,7 +8,7 @@ from models.user_table import UserModel, Insert_Userinfo, Update_Userinfo
 from models.store_table import StoreModel
 from models.hosting_table import HostingModel
 from models.participation_table import ParticipationModel
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from routes.user.api_helper import insert_userinfo, making_participation
 from auth.jwt import jwt_token2user_id
@@ -70,18 +70,31 @@ async def apply_party(
     status = await check_applicants(hosting_id, db)
     if status:
         user_id = await jwt_token2user_id(jwToken)
-        user_query = select(UserModel).where(UserModel.id == str(user_id))
-        hosting_query = select(HostingModel).where(HostingModel.hosting_id == hosting_id)
-        user_info = await query_response(user_query, db)
-        hosting_info = await query_response(hosting_query, db)
-        data = await making_participation(user_info[0], hosting_info[0])
-        if data:
-            db.add(data)
-            await db.commit()
-            await add_current_person(hosting_id, db)
+        query = select(ParticipationModel.participant_id).where(
+                ParticipationModel.hosting_id == hosting_id,
+                ParticipationModel.id == str(user_id),
+                ParticipationModel.delete_state == True
+        )
+        participant_id = (await query_response_one(query, db)).one_or_none()
+        if participant_id:
+            _query = update(ParticipationModel).where(ParticipationModel.participant_id == participant_id).values({
+                ParticipationModel.delete_state: False
+            })
+            await update_response(_query,db)
             return 'Success Apply'
         else:
-            raise HTTPException(status_code=200, detail=400)
+            user_query = select(UserModel).where(UserModel.id == str(user_id))
+            hosting_query = select(HostingModel).where(HostingModel.hosting_id == hosting_id)
+            user_info = await query_response(user_query, db)
+            hosting_info = await query_response(hosting_query, db)
+            data = await making_participation(user_info[0], hosting_info[0])
+            if data:
+                db.add(data)
+                await db.commit()
+                await add_current_person(hosting_id, db)
+                return 'Success Apply'
+            else:
+                raise HTTPException(status_code=200, detail=400)
     else:
         await update_state(hosting_id, db)
         raise HTTPException(status_code=200, detail={'status_code':400, 'message':'신청인원마감'})
