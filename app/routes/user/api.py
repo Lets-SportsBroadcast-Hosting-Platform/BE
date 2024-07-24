@@ -157,8 +157,9 @@ async def delete_party(
     query = select(UserModel).where(UserModel.id == str(user_id))
     result = (await query_response_one(query, db)).one_or_none()
     if result:
+        await delete_party_table(hosting_id, db)
         await current_personnel_count(hosting_id, db)
-        return await delete_party_table(hosting_id, db)
+        return True
     else:
         raise HTTPException(status_code=200, detail={'detail':400, 'message':'jwtoken값이 유효하지않습니다.'})
 
