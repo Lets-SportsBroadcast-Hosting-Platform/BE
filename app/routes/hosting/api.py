@@ -187,7 +187,8 @@ async def read_hosting(
             user_id = await jwt_token2user_id(jwToken)
             query = select(exists().where(
                 ParticipationModel.hosting_id == hosting_id,
-                ParticipationModel.id == str(user_id)
+                ParticipationModel.id == str(user_id),
+                ParticipationModel.delete_state == False
             ))
             status = (await query_response_one(query, db)).one_or_none()
             result['application_status'] = status
