@@ -122,14 +122,29 @@ async def read_party(
         hosting_id: int,
         db: AsyncSession = Depends(get_db)
 ):
+    print(hosting_id)
     user_id = await jwt_token2user_id(jwToken)
-    query = select(UserModel).where(UserModel.id == str(user_id))
-    result = (await query_response_one(query, db)).one_or_none()
+    result = await read_hosting_table(hosting_id, db)
+    query = select(UserModel.role).where(UserModel.id == str(user_id))
+    role = (await query_response_one(query, db)).one_or_none()
     if result:
-        return await read_hosting_table(hosting_id, db)
+        if role == 'host':
+            return result
+        else:
+            user_id = await jwt_token2user_id(jwToken)
+            query = select(exists().where(
+                ParticipationModel.hosting_id == hosting_id,
+                ParticipationModel.id == str(user_id),
+                ParticipationModel.delete_state == False
+            ))
+            status = (await query_response_one(query, db)).one_or_none()
+            result['application_status'] = status
+            result['availability_application'] = await check_applicants(hosting_id, db)
+            return result
     else:
-        raise HTTPException(status_code=200, detail={'detail':400, 'message':'jwtoken값이 유효하지않습니다.'})
-
+        raise HTTPException(
+            status_code=200, detail={"detail": 400, "message": "존재하지않는 호스팅id"}
+        )
 async def delete_party(
         jwToken: Annotated[str | None, Header(convert_underscores=False)],
         hosting_id: int,
