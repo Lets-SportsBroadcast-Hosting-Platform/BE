@@ -116,6 +116,7 @@ async def read_hosting_tables(business_no: int, status: bool, db: AsyncSession) 
                 {
                     "hosting_id": response.hosting_id,
                     "hosting_name": response.hosting_name,
+                    "business_no": response.business_no,
                     "introduce": response.introduce,
                     "current_personnel": response.current_personnel,
                     "max_personnel": response.max_personnel,
