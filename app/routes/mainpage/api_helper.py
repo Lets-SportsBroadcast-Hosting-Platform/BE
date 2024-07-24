@@ -4,6 +4,7 @@ from models.hosting_table import HostingModel
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
+from routes.hosting.api_helper import current_personnel_count
 
 # Hosting 테이블에서 사업자번호로 Read 하는 함수 CQRS : Read
 async def read_hosting_tables(db: AsyncSession) -> HostingModel:
@@ -16,6 +17,7 @@ async def read_hosting_tables(db: AsyncSession) -> HostingModel:
     if responses:
         for response in responses:
             if response.hosting_date > datetime.now():
+
                 _query = update(HostingModel).where(
                     HostingModel.hosting_id == response.hosting_id
                 ).values(
@@ -25,6 +27,7 @@ async def read_hosting_tables(db: AsyncSession) -> HostingModel:
                     }
                 )
         # 객체의 컬럼 값을 가져오기
+            count = await current_personnel_count(response.hosting_id, db)
         return [
             {
                 "hosting_id": response.hosting_id,

@@ -81,6 +81,7 @@ async def apply_party(
                 ParticipationModel.delete_state: False
             })
             await update_response(_query,db)
+            await current_personnel_count(hosting_id, db)
             return 'Success Apply'
         else:
             user_query = select(UserModel).where(UserModel.id == str(user_id))
@@ -91,7 +92,8 @@ async def apply_party(
             if data:
                 db.add(data)
                 await db.commit()
-                await add_current_person(hosting_id, db)
+                #await add_current_person(hosting_id, db)
+                await current_personnel_count(hosting_id, db)
                 return 'Success Apply'
             else:
                 raise HTTPException(status_code=200, detail=400)
@@ -123,6 +125,7 @@ async def read_party(
         db: AsyncSession = Depends(get_db)
 ):
     print(hosting_id)
+    await current_personnel_count(hosting_id, db)
     user_id = await jwt_token2user_id(jwToken)
     result = await read_hosting_table(hosting_id, db)
     query = select(UserModel.role).where(UserModel.id == str(user_id))

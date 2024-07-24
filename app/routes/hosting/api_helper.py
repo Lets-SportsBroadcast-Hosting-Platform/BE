@@ -112,13 +112,15 @@ async def read_hosting_tables(business_no: int, status: bool, db: AsyncSession) 
         # 객체의 컬럼 값을 가져오기
         for response in responses:
             # response = response[0]
+            count = await current_personnel_count(response.hosting_id, db)
+            print(count)
             hosting_list.append(
                 {
                     "hosting_id": response.hosting_id,
                     "hosting_name": response.hosting_name,
                     "business_no": response.business_no,
                     "introduce": response.introduce,
-                    "current_personnel": response.current_personnel,
+                    "current_personnel": count,
                     "max_personnel": response.max_personnel,
                     "age_group_min": response.age_group_min,
                     "age_group_max": response.age_group_max,
@@ -157,6 +159,7 @@ def make_hosting_data(data: dict, business_no:int, update: bool):
 
 # Hosting 테이블에서 hosting_id로 Read 하는 함수 CQRS : Read
 async def read_hosting_table(hosting_id: str, db: AsyncSession) -> HostingModel:
+    await current_personnel_count(hosting_id, db)
     _query = select(HostingModel).where(
         HostingModel.hosting_id == hosting_id,
     )
@@ -235,7 +238,8 @@ async def current_personnel_count(hosting_id: int, db: AsyncSession):
     _query = select(ParticipationModel).where(
         ParticipationModel.hosting_id == hosting_id,
         ParticipationModel.delete_state == False
-        )
+    )
     result = (await query_response(_query, db))
     _query = update(HostingModel).where(HostingModel.hosting_id == hosting_id).values({HostingModel.current_personnel : len(result)})
-    return await update_response(_query, db)
+    await update_response(_query, db)
+    return len(result)
